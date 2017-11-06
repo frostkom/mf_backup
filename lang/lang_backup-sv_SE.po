@@ -1,0 +1,156 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2017-11-06 11:33+0100\n"
+"PO-Revision-Date: \n"
+"Last-Translator: Martin Fors\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: sv_SE\n"
+"X-Poedit-SourceCharset: utf-8\n"
+"X-Poedit-KeywordsList: esc_html__;esc_html_e;esc_attr__;esc_attr_e;__;_e\n"
+"X-Poedit-Basepath: .\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPath-1: ..\n"
+
+#: ../include/classes.php:201
+#: ../include/functions.php:23
+msgid "I have saved the backup for you"
+msgstr "Jag har sparat backupen åt dig"
+
+#: ../include/classes.php:206
+#: ../include/functions.php:28
+msgid "I could not save the backup for you"
+msgstr "Jag kunde inte spara backupen åt dig"
+
+#: ../include/functions.php:44
+msgid "Schedule"
+msgstr "Schemalägg"
+
+#: ../include/functions.php:46
+msgid "What to backup from DB"
+msgstr "Vad från DB som ska sparas"
+
+#: ../include/functions.php:50
+msgid "Perform Backup"
+msgstr "Genomför backup"
+
+#: ../include/functions.php:55
+msgid "API Key"
+msgstr "API-nyckel"
+
+#: ../include/functions.php:59
+msgid "URL"
+msgstr "URL"
+
+#: ../include/functions.php:70
+msgid "Backup"
+msgstr "Backup"
+
+#: ../include/functions.php:79
+msgid "Inactivated"
+msgstr "Inaktiverad"
+
+#: ../include/functions.php:80
+msgid "Daily"
+msgstr "Varje dag"
+
+#: ../include/functions.php:81
+msgid "Weekly"
+msgstr "Varje vecka"
+
+#: ../include/functions.php:82
+msgid "Monthly"
+msgstr "Varje månad"
+
+#: ../include/functions.php:95
+#, php-format
+msgid "The backup was last run %s and will run again %s"
+msgstr "Backupen kördes senast %s och kommer att köras igen %s"
+
+#: ../include/functions.php:100
+#, php-format
+msgid "The backup has never been run but will be %s"
+msgstr "Backupen har aldrig körts men kommer att göra det %s"
+
+#: ../include/functions.php:111
+msgid "All"
+msgstr "Allt"
+
+#: ../include/functions.php:112
+msgid "Structure"
+msgstr "Struktur"
+
+#: ../include/functions.php:113
+msgid "Data"
+msgstr "Data"
+
+#: ../include/functions.php:122
+msgid "Run"
+msgstr "Kör"
+
+#: ../include/functions.php:132
+msgid "Create a custom key here, the more advanced the better to protect the feed and thus the backup files"
+msgstr "Skapa en egen nyckel här, ju mer avancerad desto bättre skydd för feeden och därmed för backup-filerna"
+
+#: ../include/functions.php:256
+msgid "You don't seam to have set an authorization key, please do so above"
+msgstr "Du verkar inte ha angett en nyckel, var vänlig gör det ovan"
+
+#: ../include/functions.php:261
+#, php-format
+msgid "You have to delete the %s file from (%s) the backup folders which you want to be able to download backups from"
+msgstr "Du måste radera filen %s from (%s) backup-mappen som du vill ladda ner backup-filer från"
+
+#: ../include/functions.php:268
+msgid "RSS Link"
+msgstr "RSS-länk"
+
+#: ../include/functions.php:269
+#, php-format
+msgid "Instructions to download backups to a %s"
+msgstr "Instruktioner för att ladda ner backuper till en %s"
+
+#: ../include/functions.php:272
+#, php-format
+msgid "Open %s"
+msgstr "Öppna %s"
+
+#: ../include/functions.php:273
+msgid "Go to % in the menu"
+msgstr "Gå till %s i menyn"
+
+#: ../include/functions.php:274
+msgid "Click on + and choose a name and enter the URL/Link as above"
+msgstr "Klicka på + och välj ett namn samt fyll i URL enligt ovan"
+
+#: ../include/functions.php:275
+msgid "Go to settings (Cogwheel left bottom in the window)"
+msgstr "Gå till inställningar (Kugghjul längst ner till vänster i fönstret)"
+
+#: ../include/functions.php:276
+#, php-format
+msgid "Click on the tab %s under %s"
+msgstr "Click on the tab %s under %s"
+
+#: ../include/functions.php:277
+#: ../include/functions.php:279
+#, php-format
+msgid "Choose %s as %s"
+msgstr "Välj %s som %s"
+
+#: ../include/functions.php:278
+#, php-format
+msgid "Click on the tab %s"
+msgstr "Klicka på tabben %s"
+
+#: ../include/functions.php:286
+#, php-format
+msgid "Open the %s interface"
+msgstr "Öppna %s-gränssnittet"
+
+#~ msgid "Save"
+#~ msgstr "Spara"
