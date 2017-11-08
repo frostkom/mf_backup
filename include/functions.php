@@ -42,13 +42,10 @@ function settings_backup()
 	$arr_settings = array();
 
 	$arr_settings['setting_backup_schedule'] = __("Schedule", 'lang_backup');
-
+	$arr_settings['setting_backup_limit'] = __("Number of backups to keep", 'lang_backup');
+	$arr_settings['setting_backup_compress'] = __("Compression", 'lang_backup');
 	$arr_settings['setting_backup_db_type'] = __("What to backup from DB", 'lang_backup');
-
-	if(get_option('setting_backup_db_type') != '')
-	{
-		$arr_settings['setting_backup_perform'] = __("Perform Backup", 'lang_backup');
-	}
+	$arr_settings['setting_backup_perform'] = __("Perform Backup", 'lang_backup');
 
 	if(is_plugin_active('backwpup/backwpup.php'))
 	{
@@ -102,6 +99,36 @@ function setting_backup_schedule_callback()
 	}
 }
 
+function setting_backup_limit_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option($setting_key, 5);
+
+	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => " min='0' max='20'"));
+}
+
+function setting_backup_compress_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option($setting_key, 5);
+
+	$arr_data = array(
+		'' => __("No", 'lang_backup'),
+	);
+
+	if(function_exists('bzcompress'))
+	{
+		$arr_data['bz2'] = __("Bz2", 'lang_backup');
+	}
+
+	if(function_exists('gzencode'))
+	{
+		$arr_data['gz'] = __("Gzip", 'lang_backup');
+	}
+
+	echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option));
+}
+
 function setting_backup_db_type_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
@@ -119,7 +146,7 @@ function setting_backup_db_type_callback()
 function setting_backup_perform_callback()
 {
 	echo "<div class='form_buttons'>"
-		.show_button(array('type' => 'button', 'name' => 'btnBackupPerform', 'text' => __("Run", 'lang_cache'), 'class' => 'button-secondary'))
+		.show_button(array('type' => 'button', 'name' => 'btnBackupPerform', 'text' => __("Run", 'lang_backup'), 'class' => 'button-secondary'))
 	."</div>
 	<div id='backup_debug'></div>";
 }

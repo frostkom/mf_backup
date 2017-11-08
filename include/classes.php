@@ -1,5 +1,25 @@
 <?php
 
+/*function is_exec() {
+	// Is function avail
+	if ( ! function_exists( 'exec' ) ) {
+		return false;
+	}
+
+	// Is shell_exec disabled?
+	if ( in_array( 'exec', array_map( 'trim', explode( ',', @ini_get( 'disable_functions' ) ) ), true ) ) {
+		return false;
+	}
+
+	// Can we issue a simple echo command?
+	$output = exec( 'echo backwpupechotest' );
+	if ( $output != 'backwpupechotest' ) {
+		return false;
+	}
+
+	return true;
+}*/
+
 class mf_backup
 {
 	function __construct()
@@ -7,52 +27,39 @@ class mf_backup
 		
 	}
 
-	function remove_oldest($data)
+	function gather_files($data)
 	{
-		$int_file_oldest = $int_file_newest = $str_file_oldest = $str_file_newest = "";
-
-		$arr_file_path = $arr_file_date = array();
-
-		$i = 0;
-
-		$dp = opendir($data['path']);
-
-		while(($child = readdir($dp)) !== false)
+		if(!is_dir($data['file']))
 		{
-			if($child == '.' || $child == '..') continue;
+			$file_suffix = get_file_suffix(str_replace(array(".bz2", ".gz"), "", $data['file']));
 
-			$file = $data['path'].$child;
-
-			if(!is_dir($file) && substr($file, -4) == ".".$data['suffix'])
-			{
-				$file_date = date("Y-m-d H:i:s", filemtime($file));
-
-				if($file_date < $str_file_oldest || $str_file_newest == '')
-				{
-					$int_file_oldest = $i;
-					$str_file_oldest = $file_date;
-				}
-
-				if($file_date > $str_file_newest || $str_file_newest == '')
-				{
-					$int_file_newest = $i;
-					$str_file_newest = $file_date;
-				}
-
-				$arr_file_path[$i] = $file;
-				$arr_file_date[$i] = $file_date;
-
-				$i++;
-			}
+			$this->arr_files[$file_suffix][] = array(
+				'file' => $data['file'],
+				'time' => date("Y-m-d H:i:s", filemtime($data['file'])),
+			);
 		}
+	}
 
-		closedir($dp);
+	function check_limit($data)
+	{
+		$setting_backup_limit = get_option('setting_backup_limit', 5);
 
-		if(isset($arr_file_date[$int_file_oldest]) && $arr_file_date[$int_file_oldest] < date("Y-m-d H:i:s", strtotime("-24 day")))
+		$this->arr_files = array();
+
+		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'gather_files')));
+
+		//do_log("Gather files: ".var_export($this->arr_files, true));
+
+		foreach($this->arr_files as $suffix => $arr_files)
 		{
-			do_log("Unlink ".$arr_file_path[$int_file_oldest]);
+			$arr_files = array_sort(array('array' => $arr_files, 'on' => 'time', 'order' => 'desc'));
 
-			//unlink($arr_file_path[$int_file_oldest]);
+			$count_temp = count($arr_files);
+			
+			for($i = ($setting_backup_limit - 1); $i < $count_temp; $i++)
+			{
+				unlink($arr_files[$i]['file']);
+			}
 		}
 	}
 
@@ -61,6 +68,36 @@ class mf_backup
 		if(!isset($data['limit'])){	$data['limit'] = 5;}
 
 		return substr(md5(microtime()), rand(0, 26), $data['limit']);
+	}
+
+	function archive($data)
+	{
+		if(!isset($data['options'])){			$data['options'] = "";}
+		if(!isset($data['remove_source'])){		$data['remove_source'] = false;}
+
+		switch(get_file_suffix($data['target']))
+		{
+			case 'bz2':
+				$data['options'] .= 'j';
+			break;
+
+			case 'gz':
+				$data['options'] .= 'z';
+			break;
+
+			case 'zip':
+				$data['options'] .= 'Z';
+			break;
+		}
+
+		exec("tar -cf".$data['options']." ".$data['target']." ".$data['source'], $output, $return_var);
+
+		if($data['remove_source'] == true && file_exists($data['target']) && is_file($data['source']))
+		{
+			do_log("Remove ".$data['source']);
+
+			//unlink($data['source']);
+		}
 	}
 
 	function backup_db($data = array())
@@ -74,13 +111,16 @@ class mf_backup
 		$time_reset = strtotime(date("Y-m-d H:i:s"));
 		set_time_limit(60);
 
+		$setting_backup_compress = get_option_or_default('setting_backup_compress');
 		$setting_backup_db_type = get_option_or_default('setting_backup_db_type', 'all');
+
+		$file_suffix = "sql".($setting_backup_compress != '' ? ".".$setting_backup_compress : "");
 
 		list($upload_path, $upload_url) = get_uploads_folder('mf_backup');
 		
-		$this->remove_oldest(array('path' => $upload_path, 'suffix' => 'sql'));
+		$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
 
-		$file = $upload_path.date("Y-m-d_Hi")."_db_".$setting_backup_db_type."_".$this->random_chars().".sql"; //.($data['tables'] != "*" && $data['tables'] != '' ? "_".sanitize_title_with_dashes(sanitize_title($data['tables'])) : "")
+		$file = $upload_path.date("Y-m-d_Hi")."_db_".$setting_backup_db_type."_".$this->random_chars().".".$file_suffix; //.($data['tables'] != "*" && $data['tables'] != '' ? "_".sanitize_title_with_dashes(sanitize_title($data['tables'])) : "")
 
 		$db_struct = $db_info = "# ".get_site_url()." dump";
 
@@ -180,6 +220,8 @@ class mf_backup
 				$db_info = "";
 			}
 		}
+
+		//$this->archive(array('source' => $file, 'target' => $file.".tar.bz2", 'remove_source' => true));
 
 		return $success;
 	}

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-11-06 11:33+0100\n"
+"POT-Creation-Date: 2017-11-08 09:29+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -16,12 +16,12 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPath-1: ..\n"
 
-#: ../include/classes.php:201
+#: ../include/classes.php:237
 #: ../include/functions.php:23
 msgid "I have saved the backup for you"
 msgstr "Jag har sparat backupen åt dig"
 
-#: ../include/classes.php:206
+#: ../include/classes.php:242
 #: ../include/functions.php:28
 msgid "I could not save the backup for you"
 msgstr "Jag kunde inte spara backupen åt dig"
@@ -30,124 +30,144 @@ msgstr "Jag kunde inte spara backupen åt dig"
 msgid "Schedule"
 msgstr "Schemalägg"
 
+#: ../include/functions.php:45
+msgid "Number of backups to keep"
+msgstr "Antal backuper att spara"
+
 #: ../include/functions.php:46
+msgid "Compression"
+msgstr "Kompression"
+
+#: ../include/functions.php:47
 msgid "What to backup from DB"
 msgstr "Vad från DB som ska sparas"
 
-#: ../include/functions.php:50
+#: ../include/functions.php:51
 msgid "Perform Backup"
 msgstr "Genomför backup"
 
-#: ../include/functions.php:55
+#: ../include/functions.php:56
 msgid "API Key"
 msgstr "API-nyckel"
 
-#: ../include/functions.php:59
+#: ../include/functions.php:60
 msgid "URL"
 msgstr "URL"
 
-#: ../include/functions.php:70
+#: ../include/functions.php:71
 msgid "Backup"
 msgstr "Backup"
 
-#: ../include/functions.php:79
+#: ../include/functions.php:80
 msgid "Inactivated"
 msgstr "Inaktiverad"
 
-#: ../include/functions.php:80
+#: ../include/functions.php:81
 msgid "Daily"
 msgstr "Varje dag"
 
-#: ../include/functions.php:81
+#: ../include/functions.php:82
 msgid "Weekly"
 msgstr "Varje vecka"
 
-#: ../include/functions.php:82
+#: ../include/functions.php:83
 msgid "Monthly"
 msgstr "Varje månad"
 
-#: ../include/functions.php:95
+#: ../include/functions.php:96
 #, php-format
 msgid "The backup was last run %s and will run again %s"
 msgstr "Backupen kördes senast %s och kommer att köras igen %s"
 
-#: ../include/functions.php:100
+#: ../include/functions.php:101
 #, php-format
 msgid "The backup has never been run but will be %s"
 msgstr "Backupen har aldrig körts men kommer att göra det %s"
 
-#: ../include/functions.php:111
+#: ../include/functions.php:120
+msgid "No"
+msgstr "Nej"
+
+#: ../include/functions.php:125
+msgid "Bz2"
+msgstr ""
+
+#: ../include/functions.php:130
+msgid "Gzip"
+msgstr ""
+
+#: ../include/functions.php:142
 msgid "All"
 msgstr "Allt"
 
-#: ../include/functions.php:112
+#: ../include/functions.php:143
 msgid "Structure"
 msgstr "Struktur"
 
-#: ../include/functions.php:113
+#: ../include/functions.php:144
 msgid "Data"
 msgstr "Data"
 
-#: ../include/functions.php:122
+#: ../include/functions.php:153
 msgid "Run"
 msgstr "Kör"
 
-#: ../include/functions.php:132
+#: ../include/functions.php:163
 msgid "Create a custom key here, the more advanced the better to protect the feed and thus the backup files"
 msgstr "Skapa en egen nyckel här, ju mer avancerad desto bättre skydd för feeden och därmed för backup-filerna"
 
-#: ../include/functions.php:256
+#: ../include/functions.php:287
 msgid "You don't seam to have set an authorization key, please do so above"
 msgstr "Du verkar inte ha angett en nyckel, var vänlig gör det ovan"
 
-#: ../include/functions.php:261
+#: ../include/functions.php:292
 #, php-format
 msgid "You have to delete the %s file from (%s) the backup folders which you want to be able to download backups from"
 msgstr "Du måste radera filen %s from (%s) backup-mappen som du vill ladda ner backup-filer från"
 
-#: ../include/functions.php:268
+#: ../include/functions.php:299
 msgid "RSS Link"
 msgstr "RSS-länk"
 
-#: ../include/functions.php:269
+#: ../include/functions.php:300
 #, php-format
 msgid "Instructions to download backups to a %s"
 msgstr "Instruktioner för att ladda ner backuper till en %s"
 
-#: ../include/functions.php:272
+#: ../include/functions.php:303
 #, php-format
 msgid "Open %s"
 msgstr "Öppna %s"
 
-#: ../include/functions.php:273
+#: ../include/functions.php:304
 msgid "Go to % in the menu"
 msgstr "Gå till %s i menyn"
 
-#: ../include/functions.php:274
+#: ../include/functions.php:305
 msgid "Click on + and choose a name and enter the URL/Link as above"
 msgstr "Klicka på + och välj ett namn samt fyll i URL enligt ovan"
 
-#: ../include/functions.php:275
+#: ../include/functions.php:306
 msgid "Go to settings (Cogwheel left bottom in the window)"
 msgstr "Gå till inställningar (Kugghjul längst ner till vänster i fönstret)"
 
-#: ../include/functions.php:276
+#: ../include/functions.php:307
 #, php-format
 msgid "Click on the tab %s under %s"
 msgstr "Click on the tab %s under %s"
 
-#: ../include/functions.php:277
-#: ../include/functions.php:279
+#: ../include/functions.php:308
+#: ../include/functions.php:310
 #, php-format
 msgid "Choose %s as %s"
 msgstr "Välj %s som %s"
 
-#: ../include/functions.php:278
+#: ../include/functions.php:309
 #, php-format
 msgid "Click on the tab %s"
 msgstr "Klicka på tabben %s"
 
-#: ../include/functions.php:286
+#: ../include/functions.php:317
 #, php-format
 msgid "Open the %s interface"
 msgstr "Öppna %s-gränssnittet"
