@@ -22,10 +22,7 @@
 
 class mf_backup
 {
-	function __construct()
-	{
-		
-	}
+	function __construct(){}
 
 	function gather_files($data)
 	{
@@ -55,7 +52,7 @@ class mf_backup
 			$arr_files = array_sort(array('array' => $arr_files, 'on' => 'time', 'order' => 'desc'));
 
 			$count_temp = count($arr_files);
-			
+
 			for($i = ($setting_backup_limit - 1); $i < $count_temp; $i++)
 			{
 				unlink($arr_files[$i]['file']);
@@ -100,48 +97,66 @@ class mf_backup
 		}
 	}
 
+	function get_tables_for_select($ids = true)
+	{
+		global $wpdb;
+
+		$arr_data = array();
+
+		$result = $wpdb->get_results("SHOW TABLES", ARRAY_N);
+
+		foreach($result as $r)
+		{
+			if($ids == true)
+			{
+				$arr_data[$r[0]] = $r[0];
+			}
+
+			else
+			{
+				$arr_data[] = $r[0];
+			}
+		}
+
+		return $arr_data;
+	}
+
 	function backup_db($data = array())
 	{
 		global $wpdb;
 
-		if(!isset($data['tables'])){	$data['tables'] = "*";}
-		
 		$success = false;
 
 		$time_reset = strtotime(date("Y-m-d H:i:s"));
 		set_time_limit(60);
 
 		$setting_backup_compress = get_option_or_default('setting_backup_compress');
+		$setting_backup_db_tables = get_option('setting_backup_db_tables');
 		$setting_backup_db_type = get_option_or_default('setting_backup_db_type', 'all');
 
-		$file_suffix = "sql".($setting_backup_compress != '' ? ".".$setting_backup_compress : "");
-
-		list($upload_path, $upload_url) = get_uploads_folder('mf_backup');
-		
-		$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
-
-		$file = $upload_path.date("Y-m-d_Hi")."_db_".$setting_backup_db_type."_".$this->random_chars().".".$file_suffix; //.($data['tables'] != "*" && $data['tables'] != '' ? "_".sanitize_title_with_dashes(sanitize_title($data['tables'])) : "")
-
-		$db_struct = $db_info = "# ".get_site_url()." dump";
-
-		if($data['tables'] == "*")
+		if($setting_backup_db_tables == '*' || $setting_backup_db_tables == '')
 		{
-			$data['tables'] = array();
+			$setting_backup_db_tables = $this->get_tables_for_select(false);
 
-			$result = $wpdb->get_results("SHOW TABLES", ARRAY_N);
-
-			foreach($result as $r)
-			{
-				$data['tables'][] = $r[0];
-			}
+			$table_type = $setting_backup_db_type;
 		}
 
 		else
 		{
-			$data['tables'] = is_array($data['tables']) ? $data['tables'] : explode(',', $data['tables']);
+			$table_type = 'select';
 		}
 
-		foreach($data['tables'] as $table)
+		$file_suffix = "sql".($setting_backup_compress != '' ? ".".$setting_backup_compress : "");
+
+		list($upload_path, $upload_url) = get_uploads_folder('mf_backup');
+
+		$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
+
+		$file = $upload_path.date("Y-m-d_Hi")."_db_".$table_type."_".$this->random_chars().".".$file_suffix; //.($data['tables'] != "*" && $data['tables'] != '' ? "_".sanitize_title_with_dashes(sanitize_title($data['tables'])) : "")
+
+		$db_struct = $db_info = "# ".get_site_url()." dump";
+
+		foreach($setting_backup_db_tables as $table)
 		{
 			if(in_array($setting_backup_db_type, array('all', 'struct')))
 			{
@@ -177,7 +192,7 @@ class mf_backup
 
 						foreach($r as $key => $value)
 						{
-							if(strtotime(date("Y-m-d H:i:s")) - $time_reset > 20)
+							if((strtotime(date("Y-m-d H:i:s")) - $time_reset) > 20)
 							{
 								sleep(0.1);
 								set_time_limit(60);

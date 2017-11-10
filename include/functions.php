@@ -45,6 +45,17 @@ function settings_backup()
 	$arr_settings['setting_backup_limit'] = __("Number of backups to keep", 'lang_backup');
 	$arr_settings['setting_backup_compress'] = __("Compression", 'lang_backup');
 	$arr_settings['setting_backup_db_type'] = __("What to backup from DB", 'lang_backup');
+
+	if(get_option('setting_backup_db_type') != 'struct')
+	{
+		$arr_settings['setting_backup_db_tables'] = __("Tables to Include", 'lang_backup');
+	}
+
+	else
+	{
+		delete_option('setting_backup_db_tables');
+	}
+
 	$arr_settings['setting_backup_perform'] = __("Perform Backup", 'lang_backup');
 
 	if(is_plugin_active('backwpup/backwpup.php'))
@@ -141,6 +152,17 @@ function setting_backup_db_type_callback()
 	);
 
 	echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option));
+}
+
+function setting_backup_db_tables_callback()
+{
+	$setting_key = get_setting_key(__FUNCTION__);
+	$option = get_option($setting_key);
+
+	$obj_backup = new mf_backup();
+	$arr_data = $obj_backup->get_tables_for_select();
+
+	echo show_select(array('data' => $arr_data, 'name' => $setting_key."[]", 'value' => $option, 'description' => __("If none are chosen, all are backed up", 'lang_backup')));
 }
 
 function setting_backup_perform_callback()
