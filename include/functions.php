@@ -33,7 +33,10 @@ function cron_backup()
 
 function settings_backup()
 {
-	mf_enqueue_script('script_backup', plugin_dir_url(__FILE__)."script_wp.js", array('plugin_url' => plugin_dir_url(__FILE__), 'ajax_url' => admin_url('admin-ajax.php')), get_plugin_version(__FILE__));
+	$plugin_include_url = plugin_dir_url(__FILE__);
+	$plugin_version = get_plugin_version(__FILE__);
+
+	mf_enqueue_script('script_backup', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
 
 	$options_area = __FUNCTION__;
 
