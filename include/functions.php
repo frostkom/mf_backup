@@ -317,7 +317,7 @@ function setting_rss_url_callback()
 	{
 		$rss_url = get_site_url()."/wp-content/plugins/mf_backup/include/feed.php?authkey=".$authkey;
 
-		echo "<p><a href='".$rss_url."' class='button' rel='external'>".__("RSS Link", 'lang_backup')."</a></p>
+		echo "<p><a href='".$rss_url."' class='button'>".__("RSS Link", 'lang_backup')."</a></p>
 		<h4>".sprintf(__("Instructions to download backups to a %s", 'lang_backup'), "Synology NAS")."</h4>";
 
 		echo "<ol>
@@ -335,7 +335,7 @@ function setting_rss_url_callback()
 
 		if($option != '')
 		{
-			echo "<p><a href='".validate_url($option, false)."' class='button' rel='external'>".sprintf(__("Open the %s interface", 'lang_backup'), "Synology")."</a></p>";
+			echo "<p><a href='".validate_url($option, false)."' class='button'>".sprintf(__("Open the %s interface", 'lang_backup'), "Synology")."</a></p>";
 		}
 	}
 
