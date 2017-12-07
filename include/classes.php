@@ -43,7 +43,7 @@ class mf_backup
 
 		$this->arr_files = array();
 
-		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'gather_files')));
+		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'gather_files'), 'allow_depth' => false));
 
 		//do_log("Gather files: ".var_export($this->arr_files, true));
 
