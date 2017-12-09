@@ -15,7 +15,7 @@ $authkey_sent = check_var('authkey');
 
 if($authkey_sent != $authkey_db)
 {
-	do_log("Unauthorized BackWPup RSS");
+	error_log("Unauthorized BackWPup RSS");
 
 	header("Status: 401 Unauthorized");
 }

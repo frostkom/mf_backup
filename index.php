@@ -3,7 +3,7 @@
 Plugin Name: MF Backup
 Plugin URI: https://github.com/frostkom/mf_backup
 Description: 
-Version: 1.0.9
+Version: 1.0.10
 Author: Martin Fors
 Author URI: http://frostkom.se
 Text Domain: lang_backup

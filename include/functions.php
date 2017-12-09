@@ -20,12 +20,12 @@ function cron_backup()
 
 			if($success == true)
 			{
-				do_log(__("I have saved the backup for you", 'lang_backup'));
+				error_log(__("I have saved the backup for you", 'lang_backup'));
 			}
 
 			else
 			{
-				do_log(__("I could not save the backup for you", 'lang_backup'));
+				error_log(__("I could not save the backup for you", 'lang_backup'));
 			}
 		}
 	}

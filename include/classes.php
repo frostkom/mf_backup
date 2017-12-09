@@ -91,7 +91,7 @@ class mf_backup
 
 		if($data['remove_source'] == true && file_exists($data['target']) && is_file($data['source']))
 		{
-			do_log("Remove ".$data['source']);
+			error_log("Remove ".$data['source']);
 
 			//unlink($data['source']);
 		}
@@ -272,6 +272,7 @@ class mf_backup
 			$result['error'] = $out;
 		}
 
+		header('Content-Type: application/json');
 		echo json_encode($result);
 		die();
 	}
