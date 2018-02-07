@@ -2,11 +2,11 @@
 
 function cron_backup()
 {
-	$setting_backup_schedule = get_option('setting_backup_schedule');
+	$setting_backup_schedule = get_site_option('setting_backup_schedule');
 
 	if($setting_backup_schedule != '')
 	{
-		$option_backup_saved = get_option('option_backup_saved');
+		$option_backup_saved = get_site_option('option_backup_saved');
 
 		$schedule_cutoff = date("Y-m-d H:i:s", strtotime($option_backup_saved." -1 ".$setting_backup_schedule));
 
@@ -33,45 +33,48 @@ function cron_backup()
 
 function settings_backup()
 {
-	$plugin_include_url = plugin_dir_url(__FILE__);
-	$plugin_version = get_plugin_version(__FILE__);
-
-	mf_enqueue_script('script_backup', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
-
-	$options_area = __FUNCTION__;
-
-	add_settings_section($options_area, "", $options_area."_callback", BASE_OPTIONS_PAGE);
-
-	$arr_settings = array();
-
-	$arr_settings['setting_backup_schedule'] = __("Schedule", 'lang_backup');
-	$arr_settings['setting_backup_limit'] = __("Number of backups to keep", 'lang_backup');
-	$arr_settings['setting_backup_compress'] = __("Compression", 'lang_backup');
-	$arr_settings['setting_backup_db_type'] = __("What to backup from DB", 'lang_backup');
-
-	if(get_option('setting_backup_db_type') != 'struct')
+	if(IS_SUPER_ADMIN)
 	{
-		$arr_settings['setting_backup_db_tables'] = __("Tables to Include", 'lang_backup');
-	}
+		$plugin_include_url = plugin_dir_url(__FILE__);
+		$plugin_version = get_plugin_version(__FILE__);
 
-	else
-	{
-		delete_option('setting_backup_db_tables');
-	}
+		mf_enqueue_script('script_backup', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')), $plugin_version);
 
-	$arr_settings['setting_backup_perform'] = __("Perform Backup", 'lang_backup');
+		$options_area = __FUNCTION__;
 
-	if(is_plugin_active('backwpup/backwpup.php'))
-	{
-		$arr_settings['setting_rss_api_key'] = __("API Key", 'lang_backup');
+		add_settings_section($options_area, "", $options_area."_callback", BASE_OPTIONS_PAGE);
 
-		if(get_option('setting_rss_api_key') != '')
+		$arr_settings = array();
+
+		$arr_settings['setting_backup_schedule'] = __("Schedule", 'lang_backup');
+		$arr_settings['setting_backup_limit'] = __("Number of backups to keep", 'lang_backup');
+		$arr_settings['setting_backup_compress'] = __("Compression", 'lang_backup');
+		$arr_settings['setting_backup_db_type'] = __("What to backup from DB", 'lang_backup');
+
+		if(get_site_option('setting_backup_db_type') != 'struct')
 		{
-			$arr_settings['setting_rss_url'] = __("URL", 'lang_backup');
+			$arr_settings['setting_backup_db_tables'] = __("Tables to Include", 'lang_backup');
 		}
-	}
 
-	show_settings_fields(array('area' => $options_area, 'settings' => $arr_settings));
+		else
+		{
+			delete_option('setting_backup_db_tables');
+		}
+
+		$arr_settings['setting_backup_perform'] = __("Perform Backup", 'lang_backup');
+
+		if(is_plugin_active('backwpup/backwpup.php'))
+		{
+			$arr_settings['setting_rss_api_key'] = __("API Key", 'lang_backup');
+
+			if(get_site_option('setting_rss_api_key') != '')
+			{
+				$arr_settings['setting_rss_url'] = __("URL", 'lang_backup');
+			}
+		}
+
+		show_settings_fields(array('area' => $options_area, 'settings' => $arr_settings));
+	}
 }
 
 function settings_backup_callback()
@@ -84,7 +87,8 @@ function settings_backup_callback()
 function setting_backup_schedule_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option($setting_key);
+	settings_save_site_wide($setting_key);
+	$option = get_site_option($setting_key, get_option($setting_key));
 
 	$arr_data = array(
 		'' => __("Inactivated", 'lang_backup'),
@@ -97,7 +101,7 @@ function setting_backup_schedule_callback()
 
 	if($option != '')
 	{
-		$option_backup_saved = get_option('option_backup_saved');
+		$option_backup_saved = get_site_option('option_backup_saved');
 
 		if($option_backup_saved > DEFAULT_DATE)
 		{
@@ -116,15 +120,17 @@ function setting_backup_schedule_callback()
 function setting_backup_limit_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option($setting_key, 5);
+	settings_save_site_wide($setting_key);
+	$option = get_site_option($setting_key, get_option($setting_key, 5));
 
-	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => " min='0' max='20'"));
+	echo show_textfield(array('type' => 'number', 'name' => $setting_key, 'value' => $option, 'xtra' => "min='0' max='20'"));
 }
 
 function setting_backup_compress_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option($setting_key, 5);
+	settings_save_site_wide($setting_key);
+	$option = get_site_option($setting_key, get_option($setting_key));
 
 	$arr_data = array(
 		'' => __("No", 'lang_backup'),
@@ -146,10 +152,11 @@ function setting_backup_compress_callback()
 function setting_backup_db_type_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option($setting_key);
+	settings_save_site_wide($setting_key);
+	$option = get_site_option($setting_key, get_option($setting_key));
 
 	$arr_data = array(
-		'' => __("All", 'lang_backup'),
+		'all' => __("All", 'lang_backup'),
 		'struct' => __("Structure", 'lang_backup'),
 		'data' => __("Data", 'lang_backup'),
 	);
@@ -160,7 +167,8 @@ function setting_backup_db_type_callback()
 function setting_backup_db_tables_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option($setting_key);
+	settings_save_site_wide($setting_key);
+	$option = get_site_option($setting_key, get_option($setting_key));
 
 	$obj_backup = new mf_backup();
 	$arr_data = $obj_backup->get_tables_for_select();
@@ -179,7 +187,8 @@ function setting_backup_perform_callback()
 function setting_rss_api_key_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option($setting_key);
+	settings_save_site_wide($setting_key);
+	$option = get_site_option($setting_key, get_option($setting_key));
 
 	echo show_password_field(array('name' => $setting_key, 'value' => $option, 'suffix' => __("Create a custom key here, the more advanced the better to protect the feed and thus the backup files", 'lang_backup')));
 }
@@ -299,9 +308,10 @@ function get_backup_list($data)
 function setting_rss_url_callback()
 {
 	$setting_key = get_setting_key(__FUNCTION__);
-	$option = get_option($setting_key);
+	settings_save_site_wide($setting_key);
+	$option = get_site_option($setting_key, get_option($setting_key));
 
-	$authkey = get_option('setting_rss_api_key');
+	$authkey = get_site_option('setting_rss_api_key');
 
 	if($authkey == '')
 	{

@@ -1,25 +1,5 @@
 <?php
 
-/*function is_exec() {
-	// Is function avail
-	if ( ! function_exists( 'exec' ) ) {
-		return false;
-	}
-
-	// Is shell_exec disabled?
-	if ( in_array( 'exec', array_map( 'trim', explode( ',', @ini_get( 'disable_functions' ) ) ), true ) ) {
-		return false;
-	}
-
-	// Can we issue a simple echo command?
-	$output = exec( 'echo backwpupechotest' );
-	if ( $output != 'backwpupechotest' ) {
-		return false;
-	}
-
-	return true;
-}*/
-
 class mf_backup
 {
 	function __construct(){}
@@ -39,13 +19,11 @@ class mf_backup
 
 	function check_limit($data)
 	{
-		$setting_backup_limit = get_option('setting_backup_limit', 5);
+		$setting_backup_limit = get_site_option('setting_backup_limit', 5);
 
 		$this->arr_files = array();
 
 		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'gather_files'), 'allow_depth' => false));
-
-		//do_log("Gather files: ".var_export($this->arr_files, true));
 
 		foreach($this->arr_files as $suffix => $arr_files)
 		{
@@ -92,7 +70,6 @@ class mf_backup
 		if($data['remove_source'] == true && file_exists($data['target']) && is_file($data['source']))
 		{
 			error_log("Remove ".$data['source']);
-
 			//unlink($data['source']);
 		}
 	}
@@ -107,14 +84,19 @@ class mf_backup
 
 		foreach($result as $r)
 		{
+			$table_name = $r[0];
+			$table_size = $wpdb->get_var($wpdb->prepare("SELECT ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024) FROM information_schema.TABLES WHERE table_schema = %s AND table_name = %s", DB_NAME, $table_name));
+
+			$table_size = $table_size > 0 ? " (".$table_size." MB)" : "";
+
 			if($ids == true)
 			{
-				$arr_data[$r[0]] = $r[0];
+				$arr_data[$table_name] = $table_name.$table_size;
 			}
 
 			else
 			{
-				$arr_data[] = $r[0];
+				$arr_data[] = $table_name.$table_size;
 			}
 		}
 
@@ -128,11 +110,11 @@ class mf_backup
 		$success = false;
 
 		$time_reset = strtotime(date("Y-m-d H:i:s"));
-		set_time_limit(60);
+		set_time_limit(600);
 
-		$setting_backup_compress = get_option_or_default('setting_backup_compress');
-		$setting_backup_db_tables = get_option('setting_backup_db_tables');
-		$setting_backup_db_type = get_option_or_default('setting_backup_db_type', 'all');
+		$setting_backup_compress = get_site_option('setting_backup_compress');
+		$setting_backup_db_tables = get_site_option('setting_backup_db_tables');
+		$setting_backup_db_type = get_site_option('setting_backup_db_type');
 
 		if($setting_backup_db_tables == '*' || $setting_backup_db_tables == '')
 		{
@@ -152,7 +134,7 @@ class mf_backup
 
 		$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
 
-		$file = $upload_path.date("Y-m-d_Hi")."_db_".$table_type."_".$this->random_chars().".".$file_suffix; //.($data['tables'] != "*" && $data['tables'] != '' ? "_".sanitize_title_with_dashes(sanitize_title($data['tables'])) : "")
+		$file = $upload_path.date("Y-m-d_Hi")."_db_".$table_type."_".$this->random_chars().".".$file_suffix;
 
 		$db_struct = $db_info = "# ".get_site_url()." dump";
 
@@ -168,61 +150,70 @@ class mf_backup
 
 			if(in_array($setting_backup_db_type, array('all', 'data')))
 			{
-				$result = $wpdb->get_results("SELECT * FROM ".$table, ARRAY_N);
-				$rows = $wpdb->num_rows;
+				$row_limit = 100;
+				$row_amount = $wpdb->get_var("SELECT COUNT(1) FROM ".$table);
 
-				if($rows > 0)
+				for($row_start = 0; $row_start < $row_amount; $row_start += $row_limit)
 				{
-					$db_info .= "# Data: ".$table."\n";
+					$result = $wpdb->get_results("SELECT * FROM ".$table." LIMIT ".$row_start.", ".$row_limit, ARRAY_N);
+					$rows = $wpdb->num_rows;
 
-					$i = 0;
-
-					foreach($result as $r)
+					if($rows > 0)
 					{
-						$db_info .= "\n";
-
-						if($i % 5000 == 0)
+						if($row_start == 0)
 						{
-							$db_info .= "INSERT IGNORE INTO `".$table."` VALUES";
+							$db_info .= "# Data: ".$table."\n";
 						}
 
-						$db_info .= "(";
+						$i = 0;
 
-						$j = 0;
-
-						foreach($r as $key => $value)
+						foreach($result as $r)
 						{
-							if((strtotime(date("Y-m-d H:i:s")) - $time_reset) > 20)
-							{
-								sleep(0.1);
-								set_time_limit(60);
+							$db_info .= "\n";
 
-								$time_reset = strtotime(date("Y-m-d H:i:s"));
+							if($i % 5000 == 0)
+							{
+								$db_info .= "INSERT IGNORE INTO `".$table."` VALUES";
 							}
 
-							$value = str_replace("\n", "\\n", addslashes($value));
+							$db_info .= "(";
 
-							$db_info .= ($j > 0 ? "," : "").(isset($value) ? "'".$value."'" : "'NULL'");
+							$j = 0;
 
-							$j++;
-						}
+							foreach($r as $key => $value)
+							{
+								if((strtotime(date("Y-m-d H:i:s")) - $time_reset) > 300)
+								{
+									sleep(0.1);
+									set_time_limit(600);
 
-						$db_info .= ")";
+									$time_reset = strtotime(date("Y-m-d H:i:s"));
+								}
 
-						$i++;
+								$value = str_replace("\n", "\\n", addslashes($value));
 
-						if($i % 5000 == 0 || $i == $rows)
-						{
-							$db_info .= ";";
+								$db_info .= ($j > 0 ? "," : "").(isset($value) ? "'".$value."'" : "'NULL'");
 
-							$success = set_file_content(array('file' => $file, 'mode' => 'a', 'content' => $db_info));
+								$j++;
+							}
 
-							$db_info = "";
-						}
+							$db_info .= ")";
 
-						else
-						{
-							$db_info .= ",";
+							$i++;
+
+							if($i % 5000 == 0 || $i == $rows)
+							{
+								$db_info .= ";";
+
+								$success = set_file_content(array('file' => $file, 'mode' => 'a', 'content' => $db_info));
+
+								$db_info = "";
+							}
+
+							else
+							{
+								$db_info .= ",";
+							}
 						}
 					}
 				}

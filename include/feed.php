@@ -10,7 +10,7 @@ if(!defined('ABSPATH'))
 require_once("classes.php");
 require_once("functions.php");
 
-$authkey_db = get_option('setting_rss_api_key');
+$authkey_db = get_site_option('setting_rss_api_key');
 $authkey_sent = check_var('authkey');
 
 if($authkey_sent != $authkey_db)
