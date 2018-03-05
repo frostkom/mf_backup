@@ -1,36 +1,5 @@
 <?php
 
-function cron_backup()
-{
-	$setting_backup_schedule = get_site_option('setting_backup_schedule');
-
-	if($setting_backup_schedule != '')
-	{
-		$option_backup_saved = get_site_option('option_backup_saved');
-
-		$schedule_cutoff = date("Y-m-d H:i:s", strtotime($option_backup_saved." -1 ".$setting_backup_schedule));
-
-		if($option_backup_saved == '' || $schedule_cutoff > date("Y-m-d H:i:s"))
-		{
-			update_option('option_backup_saved', date("Y-m-d H:i:s"), 'no');
-
-			$obj_backup = new mf_backup();
-
-			$success = $obj_backup->backup_db();
-
-			if($success == true)
-			{
-				error_log(__("I have saved the backup for you", 'lang_backup'));
-			}
-
-			else
-			{
-				error_log(__("I could not save the backup for you", 'lang_backup'));
-			}
-		}
-	}
-}
-
 function settings_backup()
 {
 	if(IS_SUPER_ADMIN)

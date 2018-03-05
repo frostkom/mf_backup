@@ -103,6 +103,43 @@ class mf_backup
 		return $arr_data;
 	}
 
+	function run_cron()
+	{
+		$obj_cron = new mf_cron();
+		$obj_cron->start(__FUNCTION__);
+
+		if($obj_cron->is_running == false)
+		{
+			$setting_backup_schedule = get_site_option('setting_backup_schedule');
+
+			if($setting_backup_schedule != '')
+			{
+				$option_backup_saved = get_site_option('option_backup_saved');
+
+				$schedule_cutoff = date("Y-m-d H:i:s", strtotime($option_backup_saved." -1 ".$setting_backup_schedule));
+
+				if($option_backup_saved == '' || $schedule_cutoff > date("Y-m-d H:i:s"))
+				{
+					update_option('option_backup_saved', date("Y-m-d H:i:s"), 'no');
+
+					$success = $this->backup_db();
+
+					if($success == true)
+					{
+						error_log(__("I have saved the backup for you", 'lang_backup'));
+					}
+
+					else
+					{
+						error_log(__("I could not save the backup for you", 'lang_backup'));
+					}
+				}
+			}
+		}
+
+		$obj_cron->end();
+	}
+
 	function backup_db($data = array())
 	{
 		global $wpdb;
