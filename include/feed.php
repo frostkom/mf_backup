@@ -8,7 +8,6 @@ if(!defined('ABSPATH'))
 }
 
 require_once("classes.php");
-require_once("functions.php");
 
 $authkey_db = get_site_option('setting_rss_api_key');
 $authkey_sent = check_var('authkey');
@@ -49,7 +48,8 @@ else
 <?php
 			do_action('rss2_head');
 
-			get_backup_list(array('output' => 'xml'));
+			$obj_backup = new mf_backup();
+			$obj_backup->get_backup_list(array('output' => 'xml'));
 
 		echo "</channel>
 	</rss>";
