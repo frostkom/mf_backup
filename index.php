@@ -26,6 +26,7 @@ if(is_admin())
 	register_uninstall_hook(__FILE__, 'uninstall_backup');
 
 	add_action('admin_init', array($obj_backup, 'settings_backup'));
+	add_action('admin_init', array($obj_backup, 'admin_init'));
 
 	load_plugin_textdomain('lang_backup', false, dirname(plugin_basename(__FILE__)).'/lang/');
 }
