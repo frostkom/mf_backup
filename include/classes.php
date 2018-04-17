@@ -161,7 +161,7 @@ class mf_backup
 		$option = get_site_option($setting_key, get_option($setting_key));
 
 		$obj_backup = new mf_backup();
-		$arr_data = $obj_backup->get_tables_for_select(array('check_size' => (is_array($option) && count($option) > 0)));
+		$arr_data = $obj_backup->get_or_set_transient(array('key' => 'tables_for_select', 'callback' => array($this, 'get_tables_for_select')));
 
 		echo show_select(array('data' => $arr_data, 'name' => $setting_key."[]", 'value' => $option, 'description' => __("If none are chosen, all are backed up", 'lang_backup')));
 	}
@@ -414,12 +414,37 @@ class mf_backup
 		}
 	}
 
-	function get_tables_for_select($data = array())
+	function get_or_set_transient($data)
+	{
+		if(!isset($data['key'])){			$data['key'] = '';}
+		if(!isset($data['callback'])){		$data['callback'] = '';}
+
+		$out = "";
+
+		if($data['key'] != '')
+		{
+			$out = get_transient($data['key']);
+
+			if($out == "")
+			{
+				if(is_callable($data['callback']))
+				{
+					$out = call_user_func($data['callback']);
+
+					if($out != '')
+					{
+						set_transient($data['key'], $out, DAY_IN_SECONDS); //HOUR_IN_SECONDS, WEEK_IN_SECONDS
+					}
+				}
+			}
+		}
+
+		return $out;
+	}
+
+	function get_tables_for_select()
 	{
 		global $wpdb;
-
-		if(!isset($data['include_ids'])){	$data['include_ids'] = true;}
-		if(!isset($data['check_size'])){	$data['check_size'] = true;}
 
 		$arr_data = array();
 
@@ -429,25 +454,14 @@ class mf_backup
 		{
 			$table_id = $table_name = $r[0];
 
-			if($data['check_size'] == true)
-			{
-				$table_size = $wpdb->get_var($wpdb->prepare("SELECT (DATA_LENGTH + INDEX_LENGTH) FROM information_schema.TABLES WHERE table_schema = %s AND table_name = %s", DB_NAME, $table_id));
+			$table_size = $wpdb->get_var($wpdb->prepare("SELECT (DATA_LENGTH + INDEX_LENGTH) FROM information_schema.TABLES WHERE table_schema = %s AND table_name = %s", DB_NAME, $table_id));
 
-				if($table_size > (1024 * 1024))
-				{
-					$table_name .= " (".show_final_size($table_size).")";
-				}
+			if($table_size > (1024 * 1024))
+			{
+				$table_name .= " (".show_final_size($table_size).")";
 			}
 
-			if($data['include_ids'] == true)
-			{
-				$arr_data[$table_id] = $table_name;
-			}
-
-			else
-			{
-				$arr_data[] = $table_name;
-			}
+			$arr_data[$table_id] = $table_name;
 		}
 
 		return $arr_data;
@@ -523,7 +537,7 @@ class mf_backup
 
 		if($setting_backup_db_tables == '*' || $setting_backup_db_tables == '')
 		{
-			$setting_backup_db_tables = $this->get_tables_for_select(array('check_size' => false)); //'include_ids' => false
+			$setting_backup_db_tables = $this->get_or_set_transient(array('key' => 'tables_for_select', 'callback' => array($this, 'get_tables_for_select')));
 
 			$table_type = $setting_backup_db_type;
 		}
