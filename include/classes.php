@@ -91,12 +91,18 @@ class mf_backup
 			{
 				$backup_next = format_date(date("Y-m-d H:i:s", strtotime($option_backup_saved." +1 ".$option)));
 
-				echo "<p>".sprintf(__("The backup was last run %s and will run again %s", 'lang_backup'), format_date($option_backup_saved), $backup_next)."</p>";
+				echo "<p".($backup_next < date("Y-m-d H:i:s") ? "" : "").">"
+					.($backup_next < date("Y-m-d H:i:s") ? "<i class='fa fa-warning yellow'></i> " : "")
+					.sprintf(__("The backup was last run %s and will run again %s", 'lang_backup'), format_date($option_backup_saved), $backup_next)
+				."</p>";
 			}
 
 			else
 			{
-				echo "<p>".sprintf(__("The backup has never been run but will be %s", 'lang_backup'), get_next_cron())."</p>";
+				echo "<p class='display_warning'>"
+					."<i class='fa fa-warning yellow'></i> "
+					.sprintf(__("The backup has never been run but will be %s", 'lang_backup'), get_next_cron())
+				."</p>";
 			}
 		}
 	}
@@ -155,7 +161,7 @@ class mf_backup
 		$option = get_site_option($setting_key, get_option($setting_key));
 
 		$obj_backup = new mf_backup();
-		$arr_data = $obj_backup->get_tables_for_select();
+		$arr_data = $obj_backup->get_tables_for_select(array('check_size' => (is_array($option) && count($option) > 0)));
 
 		echo show_select(array('data' => $arr_data, 'name' => $setting_key."[]", 'value' => $option, 'description' => __("If none are chosen, all are backed up", 'lang_backup')));
 	}
@@ -403,14 +409,17 @@ class mf_backup
 
 		if($data['remove_source'] == true && file_exists($data['target']) && is_file($data['source']))
 		{
-			error_log("Remove ".$data['source']);
+			do_log("Remove ".$data['source']);
 			//unlink($data['source']);
 		}
 	}
 
-	function get_tables_for_select($ids = true)
+	function get_tables_for_select($data = array())
 	{
 		global $wpdb;
+
+		if(!isset($data['include_ids'])){	$data['include_ids'] = true;}
+		if(!isset($data['check_size'])){	$data['check_size'] = true;}
 
 		$arr_data = array();
 
@@ -418,19 +427,26 @@ class mf_backup
 
 		foreach($result as $r)
 		{
-			$table_name = $r[0];
-			$table_size = $wpdb->get_var($wpdb->prepare("SELECT ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024) FROM information_schema.TABLES WHERE table_schema = %s AND table_name = %s", DB_NAME, $table_name));
+			$table_id = $table_name = $r[0];
 
-			$table_size = $table_size > 0 ? " (".$table_size." MB)" : "";
-
-			if($ids == true)
+			if($data['check_size'] == true)
 			{
-				$arr_data[$table_name] = $table_name.$table_size;
+				$table_size = $wpdb->get_var($wpdb->prepare("SELECT (DATA_LENGTH + INDEX_LENGTH) FROM information_schema.TABLES WHERE table_schema = %s AND table_name = %s", DB_NAME, $table_id));
+
+				if($table_size > (1024 * 1024))
+				{
+					$table_name .= " (".show_final_size($table_size).")";
+				}
+			}
+
+			if($data['include_ids'] == true)
+			{
+				$arr_data[$table_id] = $table_name;
 			}
 
 			else
 			{
-				$arr_data[] = $table_name.$table_size;
+				$arr_data[] = $table_name;
 			}
 		}
 
@@ -452,7 +468,7 @@ class mf_backup
 
 				$schedule_cutoff = date("Y-m-d H:i:s", strtotime($option_backup_saved." -1 ".$setting_backup_schedule));
 
-				if($option_backup_saved == '' || $schedule_cutoff > date("Y-m-d H:i:s"))
+				if($option_backup_saved == '' || $schedule_cutoff < date("Y-m-d H:i:s"))
 				{
 					update_option('option_backup_saved', date("Y-m-d H:i:s"), 'no');
 
@@ -460,12 +476,12 @@ class mf_backup
 
 					if($success == true)
 					{
-						error_log(__("I have saved the backup for you", 'lang_backup'));
+						//do_log(__("I have saved the backup for you", 'lang_backup'));
 					}
 
 					else
 					{
-						error_log(__("I could not save the backup for you", 'lang_backup'));
+						do_log(__("I could not save the backup for you", 'lang_backup'));
 					}
 				}
 			}
@@ -507,7 +523,7 @@ class mf_backup
 
 		if($setting_backup_db_tables == '*' || $setting_backup_db_tables == '')
 		{
-			$setting_backup_db_tables = $this->get_tables_for_select(false);
+			$setting_backup_db_tables = $this->get_tables_for_select(array('check_size' => false)); //'include_ids' => false
 
 			$table_type = $setting_backup_db_type;
 		}
@@ -527,7 +543,7 @@ class mf_backup
 
 		$db_struct = $db_info = "# ".get_site_url()." dump";
 
-		foreach($setting_backup_db_tables as $table)
+		foreach($setting_backup_db_tables as $table => $name)
 		{
 			if(in_array($setting_backup_db_type, array('all', 'struct')))
 			{
