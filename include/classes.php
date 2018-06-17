@@ -2,10 +2,7 @@
 
 class mf_backup
 {
-	function __construct()
-	{
-	
-	}
+	function __construct(){}
 
 	function admin_init()
 	{
