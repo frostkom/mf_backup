@@ -3,10 +3,10 @@
 Plugin Name: MF Backup
 Plugin URI: https://github.com/frostkom/mf_backup
 Description: 
-Version: 2.0.4
+Version: 2.1.6
 Licence: GPLv2 or later
 Author: Martin Fors
-Author URI: http://frostkom.se
+Author URI: https://frostkom.se
 Text Domain: lang_backup
 Domain Path: /lang
 
@@ -44,6 +44,6 @@ function uninstall_backup()
 {
 	mf_uninstall_plugin(array(
 		'uploads' => 'mf_backup',
-		'options' => array('setting_backup_schedule', 'setting_backup_limit', 'setting_backup_compress', 'setting_backup_db_type', 'setting_backup_db_tables', 'setting_backup_db_tables', 'setting_backup_perform', 'setting_rss_api_key', 'setting_rss_url'),
+		'options' => array('setting_backup_schedule', 'setting_backup_sites', 'setting_backup_perform', 'setting_rss_api_key', 'setting_rss_url', 'setting_backup_limit', 'setting_backup_compress', 'setting_backup_db_type', 'setting_backup_db_tables', 'setting_backup_db_tables'),
 	));
 }
