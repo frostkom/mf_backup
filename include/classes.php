@@ -185,7 +185,7 @@ class mf_backup
 						$this->copy_directory($source_dir, $destination_dir);
 					}
 				}
-			
+
 				else
 				{
 					copy($source_dir, $destination_dir);
