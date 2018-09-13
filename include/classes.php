@@ -570,7 +570,7 @@ class mf_backup
 				$backup_next = format_date(date("Y-m-d H:i:s", strtotime($option_backup_saved." +1 ".$option)));
 
 				echo "<p".($backup_next < date("Y-m-d H:i:s") ? "" : "").">"
-					.($backup_next < date("Y-m-d H:i:s") ? "<i class='fas fa-exclamation-triangle yellow'></i> " : "")
+					.($backup_next < date("Y-m-d H:i:s") ? "<i class='fa fa-exclamation-triangle yellow'></i> " : "")
 					.sprintf(__("The backup was last run %s and will run again %s", 'lang_backup'), format_date($option_backup_saved), $backup_next)
 				."</p>";
 			}
@@ -578,7 +578,7 @@ class mf_backup
 			else
 			{
 				echo "<p class='display_warning'>"
-					."<i class='fas fa-exclamation-triangle yellow'></i> "
+					."<i class='fa fa-exclamation-triangle yellow'></i> "
 					.sprintf(__("The backup has never been run but will be %s", 'lang_backup'), get_next_cron())
 				."</p>";
 			}
