@@ -284,7 +284,7 @@ class mf_backup
 
 		$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
 
-		$file = $upload_path.date("Y-m-d_Hi")."_db_".$table_type."_".$data['random_chars'].".".$file_suffix;
+		$file = prepare_file_name($upload_path.date("Y-m-d")."_db_".$table_type."_".$data['random_chars']).".".$file_suffix;
 
 		$db_struct = $db_info = "# ".get_site_url()." dump";
 
