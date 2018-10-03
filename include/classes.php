@@ -657,7 +657,7 @@ class mf_backup
 
 	function setting_backup_perform_callback()
 	{
-		echo "<div class='form_buttons'>"
+		echo "<div>" // class='form_buttons'
 			.show_button(array('type' => 'button', 'name' => 'btnBackupPerform', 'text' => __("Run", 'lang_backup'), 'class' => 'button-secondary'))
 		."</div>
 		<div id='backup_debug'></div>";
