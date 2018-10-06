@@ -412,7 +412,7 @@ class mf_backup
 		return $success;
 	}
 
-	function run_cron()
+	function cron_base()
 	{
 		$obj_cron = new mf_cron();
 		$obj_cron->start(__FUNCTION__);

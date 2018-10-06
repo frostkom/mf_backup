@@ -3,7 +3,7 @@
 Plugin Name: MF Backup
 Plugin URI: https://github.com/frostkom/mf_backup
 Description: 
-Version: 2.1.12
+Version: 2.1.13
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://frostkom.se
@@ -18,7 +18,7 @@ include_once("include/classes.php");
 
 $obj_backup = new mf_backup();
 
-add_action('cron_base', array($obj_backup, 'run_cron'), mt_rand(1, 10));
+add_action('cron_base', array($obj_backup, 'cron_base'), mt_rand(1, 10));
 
 if(is_admin())
 {
