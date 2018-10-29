@@ -231,10 +231,10 @@ class mf_backup
 				$success = true;
 			}
 
-			else
+			/*else
 			{
 				do_log($data['folder']." is not a folder");
-			}
+			}*/
 		}
 
 		return $success;
