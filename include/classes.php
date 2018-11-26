@@ -415,7 +415,7 @@ class mf_backup
 	function cron_base()
 	{
 		$obj_cron = new mf_cron();
-		$obj_cron->start(__FUNCTION__);
+		$obj_cron->start(__CLASS__);
 
 		if($obj_cron->is_running == false)
 		{
