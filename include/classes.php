@@ -784,6 +784,8 @@ class mf_backup
 
 		else if($this->get_backup_list(array('output' => 'htaccess')) == true)
 		{
+			$backup_dir = $this->get_backup_dir();
+
 			echo "<p>".sprintf(__("You have to delete the %s file from (%s) the backup folders which you want to be able to download backups from", 'lang_backup'), ".htaccess", $backup_dir)."</p>";
 		}
 
