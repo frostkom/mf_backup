@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-08-27 13:33+0100\n"
+"POT-Creation-Date: 2019-01-31 09:08+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -13,122 +13,121 @@ msgstr ""
 "X-Poedit-SourceCharset: utf-8\n"
 "X-Poedit-KeywordsList: esc_html__;esc_html_e;esc_attr__;esc_attr_e;__;_e\n"
 "X-Poedit-Basepath: .\n"
-"X-Poedit-SearchPath-0: .\n"
-"X-Poedit-SearchPath-1: ..\n"
+"X-Poedit-SearchPath-0: ..\n"
 
-#: ../include/classes.php:436
+#: ../include/classes.php:434
 #: ../include/classes.php:845
 msgid "I could not save the backup for you"
 msgstr "Jag kunde inte spara backupen åt dig"
 
-#: ../include/classes.php:461
+#: ../include/classes.php:459
 msgid "Schedule"
 msgstr "Schemalägg"
 
-#: ../include/classes.php:462
+#: ../include/classes.php:460
 msgid "Number of backups to keep"
 msgstr "Antal backuper att spara"
 
-#: ../include/classes.php:467
+#: ../include/classes.php:465
 msgid "Sites"
 msgstr "Webbplatser"
 
-#: ../include/classes.php:470
+#: ../include/classes.php:468
 msgid "Perform Backup"
 msgstr "Genomför backup"
 
-#: ../include/classes.php:474
+#: ../include/classes.php:472
 msgid "API Key"
 msgstr "API-nyckel"
 
-#: ../include/classes.php:478
+#: ../include/classes.php:476
 msgid "URL"
-msgstr "URL"
+msgstr ""
 
-#: ../include/classes.php:505
+#: ../include/classes.php:503
 msgid "Compression"
 msgstr "Kompression"
 
-#: ../include/classes.php:510
+#: ../include/classes.php:508
 msgid "What to backup from DB"
 msgstr "Vad från DB som ska sparas"
 
-#: ../include/classes.php:514
+#: ../include/classes.php:512
 msgid "Tables to Include"
 msgstr "Tabeller att inkludera"
 
-#: ../include/classes.php:532
-#: ../include/classes.php:546
+#: ../include/classes.php:530
+#: ../include/classes.php:544
 msgid "Backup"
-msgstr "Backup"
+msgstr ""
 
-#: ../include/classes.php:546
+#: ../include/classes.php:544
 msgid "Database"
 msgstr "Databas"
 
-#: ../include/classes.php:556
+#: ../include/classes.php:554
 msgid "Inactivated"
 msgstr "Inaktiverad"
 
-#: ../include/classes.php:557
+#: ../include/classes.php:555
 msgid "Daily"
 msgstr "Varje dag"
 
-#: ../include/classes.php:558
+#: ../include/classes.php:556
 msgid "Weekly"
 msgstr "Varje vecka"
 
-#: ../include/classes.php:559
+#: ../include/classes.php:557
 msgid "Monthly"
 msgstr "Varje månad"
 
-#: ../include/classes.php:574
+#: ../include/classes.php:572
 #, php-format
 msgid "The backup was last run %s and will run again %s"
 msgstr "Backupen kördes senast %s och kommer att köras igen %s"
 
-#: ../include/classes.php:582
+#: ../include/classes.php:580
 #, php-format
 msgid "The backup has never been run but will be %s"
 msgstr "Backupen har aldrig körts men kommer att göra det %s"
 
-#: ../include/classes.php:615
+#: ../include/classes.php:613
 msgid "No"
 msgstr "Nej"
 
-#: ../include/classes.php:620
+#: ../include/classes.php:618
 msgid "Bz2"
 msgstr ""
 
-#: ../include/classes.php:625
+#: ../include/classes.php:623
 msgid "Gzip"
 msgstr ""
 
-#: ../include/classes.php:638
+#: ../include/classes.php:636
 msgid "All"
 msgstr "Allt"
 
-#: ../include/classes.php:639
+#: ../include/classes.php:637
 msgid "Structure"
 msgstr "Struktur"
 
-#: ../include/classes.php:640
+#: ../include/classes.php:638
 msgid "Data"
-msgstr "Data"
+msgstr ""
 
-#: ../include/classes.php:655
+#: ../include/classes.php:653
 msgid "If none are chosen, all are backed up"
 msgstr "Om inga är valda, tas alla med i backupen"
 
-#: ../include/classes.php:661
+#: ../include/classes.php:659
 msgid "Run"
 msgstr "Kör"
 
-#: ../include/classes.php:672
+#: ../include/classes.php:670
 msgid "Create a custom key here, the more advanced the better to protect the feed and thus the backup files"
 msgstr "Skapa en egen nyckel här, ju mer avancerad desto bättre skydd för feeden och därmed för backup-filerna"
 
-#: ../include/classes.php:782
+#: ../include/classes.php:780
 msgid "You don't seam to have set an authorization key, please do so above"
 msgstr "Du verkar inte ha angett en nyckel, var vänlig gör det ovan"
 
@@ -166,7 +165,7 @@ msgstr "Gå till inställningar (Kugghjul längst ner till vänster i fönstret)
 #: ../include/classes.php:802
 #, php-format
 msgid "Click on the tab %s under %s"
-msgstr "Click on the tab %s under %s"
+msgstr "Klicka på tabben %s under %s"
 
 #: ../include/classes.php:803
 #: ../include/classes.php:805

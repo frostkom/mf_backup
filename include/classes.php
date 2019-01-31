@@ -198,8 +198,6 @@ class mf_backup
 
 	function backup_ftp($data = array())
 	{
-		global $wpdb;
-
 		$success = false;
 
 		$time_reset = strtotime(date("Y-m-d H:i:s"));
@@ -224,7 +222,7 @@ class mf_backup
 					$folder_name = 1;
 				}
 
-				$destination_folder = $upload_path.date('Y-m-d_Hi')."_ftp_".$folder_name."_".$data['random_chars']."/";
+				$destination_folder = $upload_path.date("Y-m-d_Hi")."_ftp_".$folder_name."_".$data['random_chars']."/";
 
 				$this->copy_directory($data['folder'], $destination_folder);
 
@@ -532,13 +530,6 @@ class mf_backup
 		echo settings_header($setting_key, __("Backup", 'lang_backup'));
 	}
 
-	/*function settings_backup_ftp_callback()
-	{
-		$setting_key = get_setting_key(__FUNCTION__);
-
-		echo settings_header($setting_key, __("Backup", 'lang_backup')." - ".__("Files", 'lang_backup'));
-	}*/
-
 	function settings_backup_db_callback()
 	{
 		$setting_key = get_setting_key(__FUNCTION__);
@@ -755,7 +746,7 @@ class mf_backup
 						echo "<item>
 							<title>".$file['name']."</title>
 							<link>".$file['url']."</link>
-							<pubDate>".mysql2date('D, d M Y H:i:s +0000', date("Y-m-d H:i:s", $file['time']), false)."</pubDate>";
+							<pubDate>".mysql2date("D, d M Y H:i:s +0000", date("Y-m-d H:i:s", $file['time']), false)."</pubDate>";
 
 							rss_enclosure();
 							do_action('rss2_item');
@@ -833,7 +824,7 @@ class mf_backup
 
 	function perform_backup()
 	{
-		global $wpdb, $done_text, $error_text;
+		global $done_text, $error_text;
 
 		$result = array();
 
