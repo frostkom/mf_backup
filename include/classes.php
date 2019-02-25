@@ -282,7 +282,7 @@ class mf_backup
 
 		$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
 
-		$file = prepare_file_name($upload_path.date("Y-m-d")."_db_".$table_type."_".$data['random_chars']).".".$file_suffix;
+		$file = prepare_file_name(date("Y-m-d")."_db_".$table_type."_".$data['random_chars']).".".$file_suffix;
 
 		$db_struct = $db_info = "# ".get_site_url()." dump";
 
@@ -353,7 +353,7 @@ class mf_backup
 							{
 								$db_info .= ";";
 
-								$success = set_file_content(array('file' => $file, 'mode' => 'a', 'content' => $db_info));
+								$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'a', 'content' => $db_info));
 
 								$db_info = "";
 							}
@@ -369,13 +369,13 @@ class mf_backup
 
 			if($db_info != '')
 			{
-				$success = set_file_content(array('file' => $file, 'mode' => 'a', 'content' => $db_info));
+				$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'a', 'content' => $db_info));
 
 				$db_info = "";
 			}
 		}
 
-		//$this->archive(array('source' => $file, 'target' => $file.".tar.bz2", 'remove_source' => true));
+		//$this->archive(array('source' => $upload_path.$file, 'target' => $file.".tar.bz2", 'remove_source' => true));
 
 		return $success;
 	}
