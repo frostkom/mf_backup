@@ -431,7 +431,7 @@ class mf_backup
 
 					if($this->do_backup() == false)
 					{
-						do_log(__("I could not save the backup for you", 'lang_backup'));
+						do_log("I could not save the backup for you");
 					}
 				}
 			}
