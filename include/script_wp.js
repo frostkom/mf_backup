@@ -41,13 +41,13 @@ jQuery(function($)
 		return false;
 	}
 
-	$(document).on('click', "button[name=btnBackupPerform]", function(e)
+	$(document).on('click', "button[name='btnBackupPerform']", function(e)
 	{
 		run_ajax(
 		{
 			'button': $(e.currentTarget),
 			'action': 'perform_backup',
-			'selector': $('#backup_debug')
+			'selector': $("#backup_debug")
 		});
 	});
 });

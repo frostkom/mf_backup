@@ -608,12 +608,12 @@ class mf_backup
 
 		if(function_exists('bzcompress'))
 		{
-			$arr_data['bz2'] = __("Bz2", 'lang_backup');
+			$arr_data['bz2'] = "Bz2";
 		}
 
 		if(function_exists('gzencode'))
 		{
-			$arr_data['gz'] = __("Gzip", 'lang_backup');
+			$arr_data['gz'] = "Gzip";
 		}
 
 		echo show_select(array('data' => $arr_data, 'name' => $setting_key, 'value' => $option));
