@@ -6,9 +6,9 @@ jQuery(function($)
 
 		$.ajax(
 		{
-			type: "post",
-			dataType: "json",
 			url: script_backup.ajax_url,
+			type: 'post',
+			dataType: 'json',
 			data: {
 				action: obj.action
 			},
@@ -16,7 +16,7 @@ jQuery(function($)
 			{
 				obj.selector.empty();
 
-				if(obj.button.is('a'))
+				if(obj.button.is("a"))
 				{
 					obj.button.addClass('hide');
 				}
