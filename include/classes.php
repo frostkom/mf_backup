@@ -490,7 +490,7 @@ class mf_backup
 			add_settings_section($options_area, "", array($this, $options_area."_callback"), BASE_OPTIONS_PAGE);
 
 			$arr_settings = array(
-				'setting_backup_limit' => __("", 'lang_backup'),
+				'setting_backup_limit' => ,
 			);
 
 			show_settings_fields(array('area' => $options_area, 'object' => $this, 'settings' => $arr_settings));*/
