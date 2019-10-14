@@ -88,19 +88,22 @@ class mf_backup
 	{
 		$setting_backup_limit = get_site_option('setting_backup_limit', 5);
 
-		$this->arr_files = array();
-
-		get_file_info(array('path' => $data['path'], 'callback' => array($this, 'gather_files'), 'allow_depth' => false));
-
-		foreach($this->arr_files as $suffix => $arr_files)
+		if($setting_backup_limit > 0)
 		{
-			$arr_files = array_sort(array('array' => $arr_files, 'on' => 'time', 'order' => 'desc'));
+			$this->arr_files = array();
 
-			$count_temp = count($arr_files);
+			get_file_info(array('path' => $data['path'], 'callback' => array($this, 'gather_files'), 'allow_depth' => false));
 
-			for($i = ($setting_backup_limit - 1); $i < $count_temp; $i++)
+			foreach($this->arr_files as $suffix => $arr_files)
 			{
-				unlink($arr_files[$i]['file']);
+				$arr_files = array_sort(array('array' => $arr_files, 'on' => 'time', 'order' => 'desc'));
+
+				$count_temp = count($arr_files);
+
+				for($i = ($setting_backup_limit - 1); $i < $count_temp; $i++)
+				{
+					unlink($arr_files[$i]['file']);
+				}
 			}
 		}
 	}
