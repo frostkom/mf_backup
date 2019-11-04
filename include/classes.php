@@ -65,9 +65,15 @@ class mf_backup
 		if(file_exists($backup_htaccess))
 		{
 			//After a new plugin release backwpup_jobs might not be the same as previuosly expected, so this will remove .htaccess from the WP root
-			//unlink($backup_htaccess);
+			if(preg_match("/uploads/", $backup_htaccess))
+			{
+				unlink($backup_htaccess);
+			}
 
-			do_log("Remove ".$backup_htaccess." but make sure that it is not in the WP root");
+			else
+			{
+				do_log("Remove ".$backup_htaccess." but make sure that it is not in the WP root");
+			}
 		}
 	}
 
