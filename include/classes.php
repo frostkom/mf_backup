@@ -650,12 +650,17 @@ class mf_backup
 	{
 		global $globals;
 
-		$globals['backup_files'][] = array(
-			//'dir' => $data['file'],
-			'url' => str_replace($data['upload_path'], $data['upload_url'], $data['file']),
-			'name' => basename($data['file']),
-			'time' => filemtime($data['file']),
-		);
+		$file_name = basename($data['file']);
+
+		if(!preg_match("/\.zip\./", $file_name))
+		{
+			$globals['backup_files'][] = array(
+				//'dir' => $data['file'],
+				'url' => str_replace($data['upload_path'], $data['upload_url'], $data['file']),
+				'name' => $file_name,
+				'time' => filemtime($data['file']),
+			);
+		}
 	}
 
 	function gather_backup_files()
