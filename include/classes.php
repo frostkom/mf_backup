@@ -276,8 +276,11 @@ class mf_backup
 			{
 				$rows2 = $wpdb->get_results("SHOW CREATE TABLE ".$table, ARRAY_N);
 
-				$db_struct .= $db_info .= "\n\n# Structure: ".$table."\n\n"
-					.$rows2[0][1].";\n\n";
+				if($wpdb->num_rows > 0)
+				{
+					$db_struct .= $db_info .= "\n\n# Structure: ".$table."\n\n"
+						.$rows2[0][1].";\n\n";
+				}
 			}
 
 			if(in_array($data['db_type'], array('all', 'data')))
