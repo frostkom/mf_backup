@@ -423,10 +423,11 @@ class mf_backup
 				}
 			}
 
-			if(get_site_option('setting_rss_api_key') != '')
+			/* Moved to feed.php to only be removed right when a legit key is used before backups are downloaded */
+			/*if(get_site_option('setting_rss_api_key') != '')
 			{
 				$this->remove_backup_htaccess();
-			}
+			}*/
 		}
 
 		$obj_cron->end();

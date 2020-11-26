@@ -9,6 +9,8 @@ if(!defined('ABSPATH'))
 
 require_once("classes.php");
 
+$obj_backup = new mf_backup();
+
 $authkey_db = get_site_option('setting_rss_api_key');
 $authkey_sent = check_var('authkey');
 
@@ -21,6 +23,8 @@ if($authkey_sent != $authkey_db)
 
 else
 {
+	$obj_backup->remove_backup_htaccess();
+
 	header('Content-Type: '.feed_content_type('rss-http').'; charset='.get_option('blog_charset'), true);
 
 	echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>';
