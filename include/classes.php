@@ -92,17 +92,24 @@ class mf_backup
 
 	function check_limit($data)
 	{
+		global $obj_base;
+
 		$setting_backup_limit = get_site_option('setting_backup_limit', 5);
 
 		if($setting_backup_limit > 0)
 		{
+			if(!isset($obj_base))
+			{
+				$obj_base = new mf_base();
+			}
+
 			$this->arr_files = array();
 
 			get_file_info(array('path' => $data['path'], 'callback' => array($this, 'gather_files'), 'allow_depth' => false));
 
 			foreach($this->arr_files as $suffix => $arr_files)
 			{
-				$arr_files = array_sort(array('array' => $arr_files, 'on' => 'time', 'order' => 'desc'));
+				$arr_files = $obj_base->array_sort(array('array' => $arr_files, 'on' => 'time', 'order' => 'desc'));
 
 				$count_temp = count($arr_files);
 
@@ -669,7 +676,7 @@ class mf_backup
 
 	function gather_backup_files()
 	{
-		global $globals;
+		global $globals, $obj_base;
 
 		list($upload_path, $upload_url) = get_uploads_folder();
 
@@ -687,7 +694,12 @@ class mf_backup
 				}
 			}
 
-			$globals['backup_files'] = array_sort(array('array' => $globals['backup_files'], 'on' => 'time', 'order' => 'desc'));
+			if(!isset($obj_base))
+			{
+				$obj_base = new mf_base();
+			}
+
+			$globals['backup_files'] = $obj_base->array_sort(array('array' => $globals['backup_files'], 'on' => 'time', 'order' => 'desc'));
 		}
 
 		return $globals['backup_files'];
