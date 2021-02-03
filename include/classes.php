@@ -455,14 +455,14 @@ class mf_backup
 				'setting_backup_limit' => __("Number of backups to keep", 'lang_backup'),
 			);
 
-			if(is_multisite() && get_site_option('setting_backup_db_tables') == '' && is_plugin_active('mf_site_manager/index.php'))
+			if(is_multisite() && get_site_option('setting_backup_db_tables') == '' && is_plugin_active("mf_site_manager/index.php"))
 			{
 				$arr_settings['setting_backup_sites'] = __("Sites", 'lang_backup');
 			}
 
 			$arr_settings['setting_backup_perform'] = __("Perform Backup", 'lang_backup');
 
-			if(is_plugin_active('backwpup/backwpup.php'))
+			if(is_plugin_active("backwpup/backwpup.php"))
 			{
 				$arr_settings['setting_rss_api_key'] = __("API Key", 'lang_backup');
 
