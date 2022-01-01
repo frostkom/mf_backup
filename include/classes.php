@@ -2,7 +2,11 @@
 
 class mf_backup
 {
-	function __construct(){}
+	function __construct()
+	{
+		$this->post_type = 'mf_backup';
+		$this->meta_prefix = $this->post_type.'_';
+	}
 
 	function get_tables_for_select($data = array())
 	{
@@ -72,7 +76,7 @@ class mf_backup
 
 			else
 			{
-				do_log("Remove ".$backup_htaccess." but make sure that it is not in the WP root");
+				do_log("Remove ".$backup_htaccess." but make sure that it is not the one in the WP root");
 			}
 		}
 	}
@@ -404,13 +408,113 @@ class mf_backup
 		return $success;
 	}
 
+	function download_file($file_source, $file_target)
+	{
+		$version = 4;
+
+		do_log("Copy ".$file_source." -> ".$file_target);
+
+		switch($version)
+		{
+			case 1:
+				$rh = fopen($file_source, 'rb');
+				$wh = fopen($file_target, 'w+b');
+
+				if(!$rh || !$wh)
+				{
+					return false;
+				}
+
+				while(!feof($rh))
+				{
+					set_time_limit(0);
+
+					if(fwrite($wh, fread($rh, 4096)) === FALSE)
+					{
+						return false;
+					}
+
+					//echo ' ';
+
+					flush();
+				}
+
+				fclose($rh);
+				fclose($wh);
+			break;
+
+			// Does not work yet
+			case 2:
+				//This is the file where we save the information
+				$fp = fopen($file_target, 'w+');
+
+				//Here is the file we are downloading, replace spaces with %20
+				$ch = curl_init(str_replace(" ", "%20", $file_source));
+
+				curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+
+				// write curl response to file
+				curl_setopt($ch, CURLOPT_FILE, $fp);
+				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+
+				// get curl response
+				curl_exec($ch);
+				curl_close($ch);
+
+				fclose($fp);
+			break;
+
+			// Does not work yet
+			case 3:
+				$fp = fopen($file_target, 'w');
+
+				$ch = curl_init($file_source);
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, false );
+				curl_setopt($ch, CURLOPT_FILE, $fp);
+
+				$data = curl_exec($ch); 
+
+				curl_close($ch);
+
+				fclose($fp);
+			break;
+
+			case 4:
+				$fp = fopen($file_target, 'w+');
+
+				$ch = curl_init();
+				curl_setopt( $ch, CURLOPT_URL, $file_source );
+
+				# set return transfer to false
+				curl_setopt( $ch, CURLOPT_RETURNTRANSFER, false );
+				curl_setopt( $ch, CURLOPT_BINARYTRANSFER, true );
+				curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+
+				# increase timeout to download big file
+				curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 10 );
+				curl_setopt( $ch, CURLOPT_FILE, $fp );
+				# execute curl
+				curl_exec( $ch );
+
+				curl_close( $ch );
+				fclose( $fp );
+			break;
+		}
+
+		return true;
+	}
+
 	function cron_base()
 	{
+		global $wpdb;
+
 		$obj_cron = new mf_cron();
 		$obj_cron->start(__CLASS__);
 
 		if($obj_cron->is_running == false)
 		{
+			/* Save new backup */
+			##########################
 			$setting_backup_schedule = get_site_option('setting_backup_schedule');
 
 			if($setting_backup_schedule != '')
@@ -429,15 +533,144 @@ class mf_backup
 					}
 				}
 			}
+			##########################
 
 			/* Moved to feed.php to only be removed right when a legit key is used before backups are downloaded */
 			/*if(get_site_option('setting_rss_api_key') != '')
 			{
 				$this->remove_backup_htaccess();
 			}*/
+
+			/* Download backups from external sites */
+			####################
+			set_time_limit(0);
+
+			$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_type = %s AND post_status = %s", $this->post_type, 'publish'));
+
+			if($wpdb->num_rows > 0)
+			{
+				foreach($result as $r)
+				{
+					$post_id = $r->ID;
+
+					$post_domain = get_post_meta($post_id, $this->meta_prefix.'domain', true);
+					$post_api_key = get_post_meta($post_id, $this->meta_prefix.'api_key', true);
+
+					if($post_domain != '' && $post_api_key != '')
+					{
+						$arr_post_downloaded = get_post_meta_or_default($post_id, $this->meta_prefix.'downloaded', true, array());
+
+						$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=backups&authkey=".$post_api_key;
+
+						list($content, $headers) = get_url_content(array(
+							'url' => $url,
+							'catch_head' => true,
+						));
+
+						$log_message = sprintf("The response from %s had an error", $url);
+
+						switch($headers['http_code'])
+						{
+							case 200:
+								$json = json_decode($content, true);
+
+								if(isset($json['success']) && $json['success'] == true)
+								{
+									list($upload_path, $upload_url) = get_uploads_folder("mf_backup/sites/".remove_protocol(array('url' => $post_domain, 'clean' => true)));
+
+									//do_log("Add .htaccess to mf_backup/sites/ folder to prevent download");
+
+									foreach($json['data'] as $item)
+									{
+										//do_log("Test: ".$item['url']." to ".$upload_path);
+
+										$file_url = $item['url'];
+										//$upload_path = dirname(__FILE__)."/";
+
+										$file_name = basename($file_url);
+										$file_dir = $upload_path.$file_name;
+
+										if($file_name == ".htaccess")
+										{
+											do_log("Ignore file (".$file_name.") from ".$url);
+										}
+
+										else if(file_exists($file_dir) && filesize($file_dir) > 0)
+										{
+											do_log("Already exists in ".$file_dir." (".show_final_size($item['size'])." == ".show_final_size(filesize($file_dir)).")");
+
+											$arr_post_downloaded[$file_name] = $item;
+										}
+
+										else
+										{
+											$success = $this->download_file($file_url, $file_dir);
+
+											if($success)
+											{
+												do_log("Downloaded ".$file_name." to ".$file_dir);
+
+												$arr_post_downloaded[$file_name] = $item;
+											}
+
+											else
+											{
+												do_log("NOT downloaded ".$file_name." to ".$file_dir);
+											}
+										}
+									}
+
+									do_log($log_message, 'trash');
+
+									update_post_meta($post_id, $this->meta_prefix.'last_fetched', date("Y-m-d H:i:s"));
+									update_post_meta($post_id, $this->meta_prefix.'downloaded', $arr_post_downloaded);
+								}
+
+								else
+								{
+									do_log($log_message." (".var_export($json, true).")");
+								}
+							break;
+
+							default:
+								do_log($log_message." (".$headers['http_code'].")");
+							break;
+						}
+					}
+				}
+			}
+			####################
 		}
 
 		$obj_cron->end();
+	}
+
+	function init()
+	{
+		if(get_site_option('setting_rss_api_key') == '')
+		{
+			$labels = array(
+				'name' => _x(__("Backup Sites", 'lang_backup'), 'post type general name'),
+				'singular_name' => _x(__("Backup Site", 'lang_backup'), 'post type singular name'),
+				'menu_name' => __("Backup Sites", 'lang_backup'),
+			);
+
+			$args = array(
+				'labels' => $labels,
+				'public' => false,
+				'show_ui' => true,
+				'show_in_nav_menus' => true,
+				'exclude_from_search' => true,
+				'capability_type' => 'page',
+				'menu_position' => 100,
+				'menu_icon' => 'dashicons-backup',
+				'supports' => array('title'),
+				'hierarchical' => true,
+				'has_archive' => false,
+			);
+
+			register_post_type($this->post_type, $args);
+		}
 	}
 
 	function settings_backup()
@@ -654,7 +887,7 @@ class mf_backup
 		settings_save_site_wide($setting_key);
 		$option = get_site_option($setting_key, get_option($setting_key));
 
-		echo show_password_field(array('name' => $setting_key, 'value' => $option, 'suffix' => __("Create a custom key here, the more advanced the better to protect the feed and thus the backup files", 'lang_backup')));
+		echo show_password_field(array('name' => $setting_key, 'value' => $option, 'xtra' => " autocomplete='new-password'", 'suffix' => __("Create a custom key here, the more advanced the better to protect the feed and thus the backup files", 'lang_backup')));
 	}
 
 	function get_backup_files($data)
@@ -663,10 +896,10 @@ class mf_backup
 
 		$file_name = basename($data['file']);
 
-		if(!preg_match("/\.zip\./", $file_name))
+		if(!preg_match("/\.zip\./", $file_name) && !isset($globals['backup_files'][$file_name]))
 		{
-			$globals['backup_files'][] = array(
-				//'dir' => $data['file'],
+			$globals['backup_files'][$file_name] = array(
+				'path' => $data['file'],
 				'url' => str_replace($data['upload_path'], $data['upload_url'], $data['file']),
 				'name' => $file_name,
 				'time' => filemtime($data['file']),
@@ -682,7 +915,7 @@ class mf_backup
 
 		$globals['backup_files'] = array();
 
-		$option = is_multisite() ? get_site_option('backwpup_jobs') : get_option('backwpup_jobs');
+		$option = (is_multisite() ? get_site_option('backwpup_jobs') : get_option('backwpup_jobs'));
 
 		if(is_array($option))
 		{
@@ -729,23 +962,51 @@ class mf_backup
 			break;
 
 			case 'html':
-				echo "<ul>";
+				$out = "<ul>";
 
 					foreach($backup_files as $file)
 					{
 						if(!in_array($file['name'], $arr_file_exclude))
 						{
-							echo "<li><a href='".$site_url.$file['url']."'>".$file['name']." (".date("Y-m-d H:i:s", $file['time']).")</a></li>";
+							$out .= "<li><a href='".$site_url.$file['url']."'>".$file['name']." (".date("Y-m-d H:i:s", $file['time']).")</a></li>";
 						}
 					}
 
-				echo "</ul>";
+				$out .= "</ul>";
+
+				return $out;
 			break;
 
-			case 'xml':
+			case 'json':
+				$arr_out = array();
+
 				foreach($backup_files as $file)
 				{
 					if(!in_array($file['name'], $arr_file_exclude))
+					{
+						$arr_out[] = array(
+							'url' => $file['url'],
+							'name' => $file['name'],
+							'time' => date("Y-m-d H:i:s", $file['time']),
+							'size' => filesize($file['path']),
+						);
+					}
+				}
+
+				return $arr_out;
+			break;
+
+			case 'xml':
+				$this->remove_backup_htaccess();
+
+				foreach($backup_files as $file)
+				{
+					/*if($file['name'] == ".htaccess")
+					{
+						unlink($file['path']);
+					}
+
+					else */if(!in_array($file['name'], $arr_file_exclude))
 					{
 						echo "<item>
 							<title>".$file['name']."</title>
@@ -777,15 +1038,15 @@ class mf_backup
 			echo "<p>".__("You don't seam to have set an authorization key, please do so above", 'lang_backup')."</p>";
 		}
 
-		else if($this->get_backup_list(array('output' => 'htaccess')) == true)
-		{
-			$backup_dir = $this->get_backup_dir();
-
-			echo "<p>".sprintf(__("You have to delete the %s file from (%s) the backup folders which you want to be able to download backups from", 'lang_backup'), ".htaccess", $backup_dir)."</p>";
-		}
-
 		else
 		{
+			if($this->get_backup_list(array('output' => 'htaccess')) == true)
+			{
+				$backup_dir = $this->get_backup_dir();
+
+				echo "<p><i class='fa fa-exclamation-triangle yellow'></i> ".sprintf(__("You have to delete the %s file from (%s) the backup folders which you want to be able to download backups from", 'lang_backup'), ".htaccess", $backup_dir)."</p>";
+			}
+
 			$rss_url = get_site_url()."/wp-content/plugins/mf_backup/include/feed.php?authkey=".$authkey;
 
 			echo "<p><a href='".$rss_url."' class='button'>".__("RSS Link", 'lang_backup')."</a></p>
@@ -810,7 +1071,7 @@ class mf_backup
 			}
 		}
 
-		//$this->get_backup_list(array('output' => 'html'));
+		//echo $this->get_backup_list(array('output' => 'html'));
 	}
 
 	function admin_init()
@@ -838,6 +1099,105 @@ class mf_backup
 		);
 
 		return $arr_settings;
+	}
+
+	function rwmb_meta_boxes($meta_boxes)
+	{
+		$meta_boxes[] = array(
+			'id' => $this->meta_prefix.'settings',
+			'title' => __("Settings", 'lang_backup'),
+			'post_types' => array($this->post_type),
+			'context' => 'normal',
+			'priority' => 'low',
+			'fields' => array(
+				array(
+					'name' => __("Domain", 'lang_backup'),
+					'id' => $this->meta_prefix.'domain',
+					'type' => 'url',
+					'attributes' => array(
+						'placeholder' => get_site_url(),
+					),
+				),
+				array(
+					'name' => __("API Key", 'lang_backup'),
+					'id' => $this->meta_prefix.'api_key',
+					'type' => 'text',
+				),
+			)
+		);
+
+		return $meta_boxes;
+	}
+
+	function column_header($cols)
+	{
+		//global $post_type;
+
+		unset($cols['date']);
+
+		/*switch($post_type)
+		{
+			case $this->post_type:*/
+				$cols['downloaded'] = __("Downloaded", 'lang_backup');
+				$cols['last_fetched'] = __("Last Fetched", 'lang_backup');
+			/*break;
+		}*/
+
+		return $cols;
+	}
+
+	function column_cell($col, $id)
+	{
+		/*global $wpdb, $post;
+
+		switch($post->post_type)
+		{
+			case $this->post_type:*/
+				switch($col)
+				{
+					case 'downloaded':
+						/*$post_domain = get_post_meta($id, $this->meta_prefix.'domain', true);
+
+						list($upload_path, $upload_url) = get_uploads_folder("mf_backup/sites/".remove_protocol(array('url' => $post_domain, 'clean' => true)));*/
+
+						$arr_post_downloaded = get_post_meta_or_default($id, $this->meta_prefix.'downloaded', true, array());
+
+						$count_temp = count($arr_post_downloaded);
+
+						if($count_temp > 0)
+						{
+							echo $count_temp;
+
+							$last_backup_file_time = DEFAULT_DATE;
+
+							foreach($arr_post_downloaded as $file_downloaded)
+							{
+								if($file_downloaded['time'] > $last_backup_file_time)
+								{
+									$last_backup_file_time = $file_downloaded['time'];
+								}
+							}
+
+							if($last_backup_file_time > DEFAULT_DATE)
+							{
+								echo "<div class='row-actions'>
+									<span class='time'>".__("Last Backup", 'lang_backup').": ".format_date($last_backup_file_time)."</span>
+								</div>";
+							}
+						}
+					break;
+
+					case 'last_fetched':
+						$post_meta = get_post_meta($id, $this->meta_prefix.'last_fetched', true);
+
+						if($post_meta > DEFAULT_DATE)
+						{
+							echo format_date($post_meta);
+						}
+					break;
+				}
+			/*break;
+		}*/
 	}
 
 	function perform_backup()

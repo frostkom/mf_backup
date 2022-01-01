@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-01-31 09:08+0100\n"
+"POT-Creation-Date: 2022-01-01 11:45+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -15,175 +15,197 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../include/classes.php:434
-#: ../include/classes.php:845
-msgid "I could not save the backup for you"
-msgstr "Jag kunde inte spara backupen åt dig"
+#: ../include/classes.php:653
+#: ../include/classes.php:655
+msgid "Backup Sites"
+msgstr "Backup av webbplatser"
 
-#: ../include/classes.php:459
+#: ../include/classes.php:654
+msgid "Backup Site"
+msgstr "Backup av webbplats"
+
+#: ../include/classes.php:687
+#: ../include/classes.php:1097
 msgid "Schedule"
 msgstr "Schemalägg"
 
-#: ../include/classes.php:460
+#: ../include/classes.php:688
 msgid "Number of backups to keep"
 msgstr "Antal backuper att spara"
 
-#: ../include/classes.php:465
+#: ../include/classes.php:693
 msgid "Sites"
 msgstr "Webbplatser"
 
-#: ../include/classes.php:468
+#: ../include/classes.php:696
 msgid "Perform Backup"
 msgstr "Genomför backup"
 
-#: ../include/classes.php:472
+#: ../include/classes.php:700
+#: ../include/classes.php:1122
 msgid "API Key"
 msgstr "API-nyckel"
 
-#: ../include/classes.php:476
+#: ../include/classes.php:704
 msgid "URL"
 msgstr ""
 
-#: ../include/classes.php:503
+#: ../include/classes.php:731
 msgid "Compression"
 msgstr "Kompression"
 
-#: ../include/classes.php:508
+#: ../include/classes.php:736
 msgid "What to backup from DB"
 msgstr "Vad från DB som ska sparas"
 
-#: ../include/classes.php:512
+#: ../include/classes.php:740
 msgid "Tables to Include"
 msgstr "Tabeller att inkludera"
 
-#: ../include/classes.php:530
-#: ../include/classes.php:544
+#: ../include/classes.php:758
+#: ../include/classes.php:765
 msgid "Backup"
 msgstr ""
 
-#: ../include/classes.php:544
+#: ../include/classes.php:765
 msgid "Database"
 msgstr "Databas"
 
-#: ../include/classes.php:554
+#: ../include/classes.php:775
 msgid "Inactivated"
 msgstr "Inaktiverad"
 
-#: ../include/classes.php:555
+#: ../include/classes.php:776
 msgid "Daily"
 msgstr "Varje dag"
 
-#: ../include/classes.php:556
+#: ../include/classes.php:777
 msgid "Weekly"
 msgstr "Varje vecka"
 
-#: ../include/classes.php:557
+#: ../include/classes.php:778
 msgid "Monthly"
 msgstr "Varje månad"
 
-#: ../include/classes.php:572
+#: ../include/classes.php:793
 #, php-format
 msgid "The backup was last run %s and will run again %s"
 msgstr "Backupen kördes senast %s och kommer att köras igen %s"
 
-#: ../include/classes.php:580
+#: ../include/classes.php:801
 #, php-format
 msgid "The backup has never been run but will be %s"
 msgstr "Backupen har aldrig körts men kommer att göra det %s"
 
-#: ../include/classes.php:613
+#: ../include/classes.php:834
 msgid "No"
 msgstr "Nej"
 
-#: ../include/classes.php:618
-msgid "Bz2"
-msgstr ""
-
-#: ../include/classes.php:623
-msgid "Gzip"
-msgstr ""
-
-#: ../include/classes.php:636
+#: ../include/classes.php:857
 msgid "All"
 msgstr "Allt"
 
-#: ../include/classes.php:637
+#: ../include/classes.php:858
 msgid "Structure"
 msgstr "Struktur"
 
-#: ../include/classes.php:638
+#: ../include/classes.php:859
 msgid "Data"
 msgstr ""
 
-#: ../include/classes.php:653
+#: ../include/classes.php:873
 msgid "If none are chosen, all are backed up"
 msgstr "Om inga är valda, tas alla med i backupen"
 
-#: ../include/classes.php:659
+#: ../include/classes.php:879
 msgid "Run"
 msgstr "Kör"
 
-#: ../include/classes.php:670
+#: ../include/classes.php:890
 msgid "Create a custom key here, the more advanced the better to protect the feed and thus the backup files"
 msgstr "Skapa en egen nyckel här, ju mer avancerad desto bättre skydd för feeden och därmed för backup-filerna"
 
-#: ../include/classes.php:780
+#: ../include/classes.php:1038
 msgid "You don't seam to have set an authorization key, please do so above"
 msgstr "Du verkar inte ha angett en nyckel, var vänlig gör det ovan"
 
-#: ../include/classes.php:787
+#: ../include/classes.php:1047
 #, php-format
 msgid "You have to delete the %s file from (%s) the backup folders which you want to be able to download backups from"
 msgstr "Du måste radera filen %s from (%s) backup-mappen som du vill ladda ner backup-filer från"
 
-#: ../include/classes.php:794
+#: ../include/classes.php:1052
 msgid "RSS Link"
 msgstr "RSS-länk"
 
-#: ../include/classes.php:795
+#: ../include/classes.php:1053
 #, php-format
 msgid "Instructions to download backups to a %s"
 msgstr "Instruktioner för att ladda ner backuper till en %s"
 
-#: ../include/classes.php:798
+#: ../include/classes.php:1056
 #, php-format
 msgid "Open %s"
 msgstr "Öppna %s"
 
-#: ../include/classes.php:799
+#: ../include/classes.php:1057
 msgid "Go to % in the menu"
 msgstr "Gå till %s i menyn"
 
-#: ../include/classes.php:800
+#: ../include/classes.php:1058
 msgid "Click on + and choose a name and enter the URL/Link as above"
 msgstr "Klicka på + och välj ett namn samt fyll i URL enligt ovan"
 
-#: ../include/classes.php:801
+#: ../include/classes.php:1059
 msgid "Go to settings (Cogwheel left bottom in the window)"
 msgstr "Gå till inställningar (Kugghjul längst ner till vänster i fönstret)"
 
-#: ../include/classes.php:802
+#: ../include/classes.php:1060
 #, php-format
 msgid "Click on the tab %s under %s"
 msgstr "Klicka på tabben %s under %s"
 
-#: ../include/classes.php:803
-#: ../include/classes.php:805
+#: ../include/classes.php:1061
+#: ../include/classes.php:1063
 #, php-format
 msgid "Choose %s as %s"
 msgstr "Välj %s som %s"
 
-#: ../include/classes.php:804
+#: ../include/classes.php:1062
 #, php-format
 msgid "Click on the tab %s"
 msgstr "Klicka på tabben %s"
 
-#: ../include/classes.php:812
+#: ../include/classes.php:1070
 #, php-format
 msgid "Open the %s interface"
 msgstr "Öppna %s-gränssnittet"
 
-#: ../include/classes.php:840
+#: ../include/classes.php:1108
+msgid "Settings"
+msgstr "Inställningar"
+
+#: ../include/classes.php:1114
+msgid "Domain"
+msgstr "Domän"
+
+#: ../include/classes.php:1141
+msgid "Downloaded"
+msgstr "Nedladdade"
+
+#: ../include/classes.php:1142
+msgid "Last Fetched"
+msgstr "Senast hämtad"
+
+#: ../include/classes.php:1184
+msgid "Last Backup"
+msgstr "Senaste backup"
+
+#: ../include/classes.php:1206
 msgid "I have saved the backup for you"
 msgstr "Jag har sparat backupen åt dig"
+
+#: ../include/classes.php:1211
+msgid "I could not save the backup for you"
+msgstr "Jag kunde inte spara backupen åt dig"
 

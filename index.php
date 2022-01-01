@@ -3,7 +3,7 @@
 Plugin Name: MF Backup
 Plugin URI: https://github.com/frostkom/mf_backup
 Description: 
-Version: 2.2.5
+Version: 2.2.8
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://frostkom.se
@@ -22,6 +22,8 @@ if(function_exists('is_plugin_active') && is_plugin_active("mf_base/index.php"))
 
 	add_action('cron_base', array($obj_backup, 'cron_base'), mt_rand(1, 10));
 
+	add_action('init', array($obj_backup, 'init'));
+
 	if(is_admin())
 	{
 		register_activation_hook(__FILE__, 'activate_backup');
@@ -31,6 +33,11 @@ if(function_exists('is_plugin_active') && is_plugin_active("mf_base/index.php"))
 		add_action('admin_init', array($obj_backup, 'admin_init'), 0);
 
 		add_filter('filter_sites_table_settings', array($obj_backup, 'filter_sites_table_settings'));
+
+		add_action('rwmb_meta_boxes', array($obj_backup, 'rwmb_meta_boxes'));
+
+		add_filter('manage_'.$obj_backup->post_type.'_posts_columns', array($obj_backup, 'column_header'), 5);
+		add_action('manage_'.$obj_backup->post_type.'_posts_custom_column', array($obj_backup, 'column_cell'), 5, 2);
 
 		load_plugin_textdomain('lang_backup', false, dirname(plugin_basename(__FILE__))."/lang/");
 	}
@@ -46,8 +53,11 @@ if(function_exists('is_plugin_active') && is_plugin_active("mf_base/index.php"))
 
 	function uninstall_backup()
 	{
+		global $obj_backup;
+
 		mf_uninstall_plugin(array(
-			'uploads' => 'mf_backup',
+			'uploads' => $obj_backup->post_type,
+			'post_types' => array($obj_backup->post_type),
 			'options' => array('setting_backup_schedule', 'setting_backup_sites', 'setting_backup_perform', 'setting_rss_api_key', 'setting_rss_url', 'setting_backup_limit', 'setting_backup_compress', 'setting_backup_db_type', 'setting_backup_db_tables', 'setting_backup_db_tables'),
 		));
 	}
