@@ -599,15 +599,9 @@ class mf_backup
 			}
 			##########################
 
-			/* Moved to feed.php to only be removed right when a legit key is used before backups are downloaded */
-			/*if(get_site_option('setting_rss_api_key') != '')
-			{
-				$this->remove_backup_htaccess();
-			}*/
-
 			/* Download backups from external sites */
 			####################
-			set_time_limit(0);
+			//set_time_limit(0);
 
 			$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_type = %s AND post_status = %s", $this->post_type, 'publish'));
 
@@ -643,6 +637,10 @@ class mf_backup
 									list($upload_path, $upload_url) = get_uploads_folder("mf_backup/sites/".remove_protocol(array('url' => $post_domain, 'clean' => true)));
 
 									//do_log("Add .htaccess to mf_backup/sites/ folder to prevent download");
+
+									$post_limit_amount = count($json['data']);
+
+									update_post_meta($post_id, $this->meta_prefix.'limit_amount', $post_limit_amount);
 
 									foreach($json['data'] as $item)
 									{
@@ -702,11 +700,16 @@ class mf_backup
 										}
 									}
 
-									do_log($log_message, 'trash');
-
 									update_post_meta($post_id, $this->meta_prefix.'last_fetched', date("Y-m-d H:i:s"));
 									//update_post_meta($post_id, $this->meta_prefix.'downloaded', $arr_post_downloaded);
 									delete_post_meta($post_id, $this->meta_prefix.'downloaded');
+
+									if($this->get_amount(array('id' => $post_id)) > $post_limit_amount)
+									{
+										do_log("Remove the oldest backup for ".$post_domain);
+									}
+
+									do_log($log_message, 'trash');
 								}
 
 								else
@@ -1210,6 +1213,37 @@ class mf_backup
 		}
 	}*/
 
+	function row_actions($actions, $post)
+	{
+		if($post->post_type == $this->post_type)
+		{
+			$post_id = $post->ID;
+
+			unset($actions['inline hide-if-no-js']);
+
+			/*if($post->post_status == 'publish')
+			{*/
+				$post_domain = get_post_meta($post_id, $this->meta_prefix.'domain', true);
+				$post_api_key = get_post_meta($post_id, $this->meta_prefix.'api_key', true);
+
+				if($post_domain != '' && $post_api_key != '')
+				{
+					$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=backups&authkey=".$post_api_key;
+
+					$actions['source'] = "<a href='".$url."'>".__("Source", 'lang_backup')."</a>";
+				}
+
+				else
+				{
+					unset($actions['edit']);
+					//unset($actions['trash']);
+				}
+			//}
+		}
+
+		return $actions;
+	}
+
 	function rwmb_meta_boxes($meta_boxes)
 	{
 		$meta_boxes[] = array(
@@ -1319,6 +1353,7 @@ class mf_backup
 		{
 			case $this->post_type:
 				//$cols['downloaded'] = __("Downloaded", 'lang_backup');
+				$cols['size'] = __("Size", 'lang_backup');
 				$cols['last_fetched'] = __("Last Updated", 'lang_backup');
 			break;
 
@@ -1345,7 +1380,7 @@ class mf_backup
 		}
 
 		//return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_type = %s AND post_status = %s AND meta_key = '".$this->meta_prefix."???_id' AND meta_value = '%d'", $this->post_type_item, $data['post_status'], $this->id));
-		return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." WHERE post_type = %s AND post_status = %s AND post_parent = '%d'", $this->post_type, $data['post_status'], $this->id));
+		return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d'", $this->post_type, $this->id)); // AND post_status = %s //, $data['post_status']
 	}
 
 	function column_cell($col, $id)
@@ -1375,14 +1410,38 @@ class mf_backup
 						}
 					break;*/
 
+					case 'size':
+						$post_meta = get_post_meta($id, $this->meta_prefix.'size', true);
+
+						// Children
+						if($post_meta > 0)
+						{
+							echo show_final_size($post_meta);
+						}
+
+						// Parents
+						else
+						{
+							$post_amount = $this->get_amount(array('id' => $id));
+							$post_limit_amount = get_post_meta($id, $this->meta_prefix.'limit_amount', true);
+
+							if($post_amount > 0 || $post_limit_amount > 0)
+							{
+								echo $post_amount." / ".$post_limit_amount;
+							}
+						}
+					break;
+
 					case 'last_fetched':
 						$post_meta = get_post_meta($id, $this->meta_prefix.'last_fetched', true);
 
+						// Parents
 						if($post_meta > DEFAULT_DATE)
 						{
 							echo format_date($post_meta);
 						}
 
+						// Children
 						else
 						{
 							$post_meta = get_post_meta($id, $this->meta_prefix.'time', true);

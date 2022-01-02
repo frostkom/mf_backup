@@ -35,6 +35,10 @@ if(function_exists('is_plugin_active') && is_plugin_active("mf_base/index.php"))
 		add_filter('filter_sites_table_settings', array($obj_backup, 'filter_sites_table_settings'));
 
 		//add_action('admin_menu', array($obj_backup, 'admin_menu'));
+
+		add_filter('post_row_actions', array($obj_backup, 'row_actions'), 10, 2);
+		add_filter('page_row_actions', array($obj_backup, 'row_actions'), 10, 2);
+
 		add_action('rwmb_meta_boxes', array($obj_backup, 'rwmb_meta_boxes'));
 
 		/*add_action('restrict_manage_posts', array($obj_backup, 'restrict_manage_posts'));
