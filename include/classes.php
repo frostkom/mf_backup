@@ -5,6 +5,7 @@ class mf_backup
 	function __construct()
 	{
 		$this->post_type = 'mf_backup';
+		//$this->post_type_item = $this->post_type.'_item';
 		$this->meta_prefix = $this->post_type.'_';
 	}
 
@@ -412,7 +413,7 @@ class mf_backup
 	{
 		$version = 4;
 
-		do_log("Copy ".$file_source." -> ".$file_target);
+		//do_log("Copy ".$file_source." -> ".$file_target);
 
 		switch($version)
 		{
@@ -469,7 +470,7 @@ class mf_backup
 				$fp = fopen($file_target, 'w');
 
 				$ch = curl_init($file_source);
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, false );
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
 				curl_setopt($ch, CURLOPT_FILE, $fp);
 
 				$data = curl_exec($ch); 
@@ -483,25 +484,88 @@ class mf_backup
 				$fp = fopen($file_target, 'w+');
 
 				$ch = curl_init();
-				curl_setopt( $ch, CURLOPT_URL, $file_source );
+				curl_setopt($ch, CURLOPT_URL, $file_source);
 
 				# set return transfer to false
-				curl_setopt( $ch, CURLOPT_RETURNTRANSFER, false );
-				curl_setopt( $ch, CURLOPT_BINARYTRANSFER, true );
-				curl_setopt( $ch, CURLOPT_SSL_VERIFYPEER, false );
+				curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+				curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
+				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
 				# increase timeout to download big file
-				curl_setopt( $ch, CURLOPT_CONNECTTIMEOUT, 10 );
-				curl_setopt( $ch, CURLOPT_FILE, $fp );
+				curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+				curl_setopt($ch, CURLOPT_FILE, $fp);
 				# execute curl
-				curl_exec( $ch );
+				curl_exec($ch);
 
-				curl_close( $ch );
-				fclose( $fp );
+				curl_close($ch);
+				fclose($fp);
 			break;
 		}
 
 		return true;
+	}
+
+	function add_item($item)
+	{
+		global $wpdb; //, $post_id
+
+		$post_data = array(
+			'post_title' => $item['name'],
+			'post_parent' => $item['parent_id'],
+			'post_type' => $obj_backup->post_type,
+			'post_status' => 'publish',
+			'meta_input' => array(
+				$this->meta_prefix.'url' => $item['url'],
+				$this->meta_prefix.'size' => $item['size'],
+				$this->meta_prefix.'time' => $item['time'],
+			),
+		);
+
+		//$wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_parent = '%d' AND meta_key = %s AND meta_value = %s", $item['parent_id'], $this->meta_prefix.'url', $item['url']));
+		$wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_parent = '%d' AND post_title = %s", $item['parent_id'], $item['name']));
+
+		if($wpdb->num_rows > 0)
+		{
+			$i = 0;
+
+			foreach($result as $r)
+			{
+				$post_id = $r->ID;
+
+				if($i == 0)
+				{
+					$post_data['ID'] = $post_id;
+
+					wp_update_post($post_data);
+
+					$i++;
+				}
+
+				else
+				{
+					wp_trash_post($post_id);
+				}
+			}
+		}
+
+		else
+		{
+			$post_id = wp_insert_post($post_data);
+		}
+
+		/*
+
+		$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_type = %s AND post_status = %s AND (post_title = %s OR post_name = %s) AND post_parent = '%d'", $this->post_type_post, 'publish', $post_title, $post_name, $this->id));
+
+		if($wpdb->num_rows == 0)
+		{
+			
+		}
+
+		else
+		{
+			
+		}*/
 	}
 
 	function cron_base()
@@ -558,7 +622,7 @@ class mf_backup
 
 					if($post_domain != '' && $post_api_key != '')
 					{
-						$arr_post_downloaded = get_post_meta_or_default($post_id, $this->meta_prefix.'downloaded', true, array());
+						//$arr_post_downloaded = get_post_meta_or_default($post_id, $this->meta_prefix.'downloaded', true, array());
 
 						$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=backups&authkey=".$post_api_key;
 
@@ -585,7 +649,6 @@ class mf_backup
 										//do_log("Test: ".$item['url']." to ".$upload_path);
 
 										$file_url = $item['url'];
-										//$upload_path = dirname(__FILE__)."/";
 
 										$file_name = basename($file_url);
 										$file_dir = $upload_path.$file_name;
@@ -595,27 +658,46 @@ class mf_backup
 											do_log("Ignore file (".$file_name.") from ".$url);
 										}
 
-										else if(file_exists($file_dir) && filesize($file_dir) > 0)
-										{
-											do_log("Already exists in ".$file_dir." (".show_final_size($item['size'])." == ".show_final_size(filesize($file_dir)).")");
-
-											$arr_post_downloaded[$file_name] = $item;
-										}
-
 										else
 										{
-											$success = $this->download_file($file_url, $file_dir);
-
-											if($success)
+											if(file_exists($file_dir) && filesize($file_dir) > 0)
 											{
-												do_log("Downloaded ".$file_name." to ".$file_dir);
+												if(isset($item['size']) && $item['size'] != filesize($file_dir))
+												{
+													//do_log("Already exists in ".$file_dir." BUT has different size (".show_final_size($item['size'])." != ".show_final_size(filesize($file_dir)).")");
 
-												$arr_post_downloaded[$file_name] = $item;
+													unlink($file_dir);
+												}
+
+												else
+												{
+													//$arr_post_downloaded[$file_name] = $item;
+
+													$item_temp = $item;
+													$item_temp['parent_id'] = $post_id;
+													$this->add_item($item_temp);
+												}
 											}
 
-											else
+											if(!file_exists($file_dir))
 											{
-												do_log("NOT downloaded ".$file_name." to ".$file_dir);
+												$success = $this->download_file($file_url, $file_dir);
+
+												if($success)
+												{
+													//do_log("Downloaded ".$file_name." to ".$file_dir);
+
+													//$arr_post_downloaded[$file_name] = $item;
+
+													$item_temp = $item;
+													$item_temp['parent_id'] = $post_id;
+													$this->add_item($item_temp);
+												}
+
+												else
+												{
+													do_log("NOT downloaded ".$file_name." to ".$file_dir);
+												}
 											}
 										}
 									}
@@ -623,7 +705,8 @@ class mf_backup
 									do_log($log_message, 'trash');
 
 									update_post_meta($post_id, $this->meta_prefix.'last_fetched', date("Y-m-d H:i:s"));
-									update_post_meta($post_id, $this->meta_prefix.'downloaded', $arr_post_downloaded);
+									//update_post_meta($post_id, $this->meta_prefix.'downloaded', $arr_post_downloaded);
+									delete_post_meta($post_id, $this->meta_prefix.'downloaded');
 								}
 
 								else
@@ -650,18 +733,19 @@ class mf_backup
 		if(get_site_option('setting_rss_api_key') == '')
 		{
 			$labels = array(
-				'name' => _x(__("Backup Sites", 'lang_backup'), 'post type general name'),
-				'singular_name' => _x(__("Backup Site", 'lang_backup'), 'post type singular name'),
-				'menu_name' => __("Backup Sites", 'lang_backup'),
+				'name' => _x(__("Backup", 'lang_backup'), 'post type general name'),
+				'singular_name' => _x(__("Backup", 'lang_backup'), 'post type singular name'),
+				'menu_name' => __("Backup", 'lang_backup'),
 			);
 
 			$args = array(
 				'labels' => $labels,
 				'public' => false,
 				'show_ui' => true,
-				'show_in_nav_menus' => true,
+				'show_in_menu' => true,
+				'show_in_nav_menus' => false,
 				'exclude_from_search' => true,
-				'capability_type' => 'page',
+				//'capability_type' => 'page',
 				'menu_position' => 100,
 				'menu_icon' => 'dashicons-backup',
 				'supports' => array('title'),
@@ -1101,6 +1185,31 @@ class mf_backup
 		return $arr_settings;
 	}
 
+	/*function admin_menu()
+	{
+		$menu_root = 'mf_backup/';
+		$menu_start = "edit.php?post_type=".$this->post_type;
+		$menu_capability = override_capability(array('page' => $menu_start, 'default' => 'edit_pages'));
+
+		$menu_title = __("Backup", 'lang_backup');
+		add_menu_page("", $menu_title, $menu_capability, $menu_start, '', 'dashicons-backup', 100);
+
+		$menu_title = __("Lists", 'lang_backup');
+		add_submenu_page($menu_start, $menu_title, $menu_title, $menu_capability, $menu_start);
+
+		$menu_title = __("Add New", 'lang_backup');
+		add_submenu_page($menu_start, $menu_title, " - ".$menu_title, $menu_capability, "post-new.php?post_type=".$this->post_type);
+
+		if(does_post_exists(array('post_type' => $this->post_type)))
+		{
+			$menu_title = __("Items", 'lang_backup');
+			add_submenu_page($menu_start, $menu_title, $menu_title, $menu_capability, "edit.php?post_type=".$this->post_type_item);
+
+			$menu_title = __("Add New", 'lang_backup');
+			add_submenu_page($menu_root, $menu_title, " - ".$menu_title, $menu_capability, "post-new.php?post_type=".$this->post_type_item);
+		}
+	}*/
+
 	function rwmb_meta_boxes($meta_boxes)
 	{
 		$meta_boxes[] = array(
@@ -1110,6 +1219,7 @@ class mf_backup
 			'context' => 'normal',
 			'priority' => 'low',
 			'fields' => array(
+				// Parents
 				array(
 					'name' => __("Domain", 'lang_backup'),
 					'id' => $this->meta_prefix.'domain',
@@ -1123,69 +1233,147 @@ class mf_backup
 					'id' => $this->meta_prefix.'api_key',
 					'type' => 'text',
 				),
+				// Children
+				array(
+					'name' => __("URL", 'lang_backup'),
+					'id' => $this->meta_prefix.'url',
+					'type' => 'url',
+				),
+				array(
+					'name' => __("Size", 'lang_backup'),
+					'id' => $this->meta_prefix.'size',
+					'type' => 'number',
+				),
 			)
 		);
+
+		/*$meta_boxes[] = array(
+			'id' => $this->meta_prefix.'settings',
+			'title' => __("Settings", 'lang_backup'),
+			'post_types' => array($this->post_type_item),
+			'context' => 'normal',
+			'priority' => 'low',
+			'fields' => array(
+				array(
+					'name' => __("Domain", 'lang_backup'),
+					'id' => $this->meta_prefix.'url',
+					'type' => 'url',
+				),
+				array(
+					'name' => __("API Key", 'lang_backup'),
+					'id' => $this->meta_prefix.'size',
+					'type' => 'number',
+				),
+			)
+		);*/
 
 		return $meta_boxes;
 	}
 
+	/*function restrict_manage_posts()
+	{
+		global $post_type;
+
+		if($post_type == $this->post_type_item)
+		{
+			$strFilterBackup = check_var('strFilterBackup');
+
+			$arr_data = array();
+			get_post_children(array('post_type' => $this->post_type, 'post_status' => '', 'add_choose_here' => true), $arr_data);
+
+			if(count($arr_data) > 2)
+			{
+				echo show_select(array('data' => $arr_data, 'name' => 'strFilterBackup', 'value' => $strFilterBackup));
+			}
+		}
+	}
+
+	function pre_get_posts($wp_query)
+	{
+		global $post_type, $pagenow;
+
+		if($pagenow == 'edit.php' && $post_type == $this->post_type_post)
+		{
+			$strFilterBackup = check_var('strFilterBackup');
+
+			if($strFilterBackup != '')
+			{
+				$wp_query->query_vars['meta_query'] = array(
+					array(
+						'key' => $this->meta_prefix.'???_id',
+						'value' => $strFilterBackup,
+						'compare' => '=',
+					),
+				);
+			}
+		}
+	}*/
+
 	function column_header($cols)
 	{
-		//global $post_type;
-
+		global $post_type;
+		
 		unset($cols['date']);
 
-		/*switch($post_type)
+		switch($post_type)
 		{
-			case $this->post_type:*/
-				$cols['downloaded'] = __("Downloaded", 'lang_backup');
-				$cols['last_fetched'] = __("Last Fetched", 'lang_backup');
-			/*break;
-		}*/
+			case $this->post_type:
+				//$cols['downloaded'] = __("Downloaded", 'lang_backup');
+				$cols['last_fetched'] = __("Last Updated", 'lang_backup');
+			break;
+
+			/*case $this->post_type_item:
+				$cols['url'] = __("URL", 'lang_backup');
+				$cols['size'] = __("Size", 'lang_backup');
+				$cols['time'] = __("Time", 'lang_backup');
+			break;*/
+		}
 
 		return $cols;
 	}
 
+	function get_amount($data = array())
+	{
+		global $wpdb;
+
+		if(!isset($data['id'])){			$data['id'] = 0;}
+		if(!isset($data['post_status'])){	$data['post_status'] = 'publish';}
+
+		if($data['id'] > 0)
+		{
+			$this->id = $data['id'];
+		}
+
+		//return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_type = %s AND post_status = %s AND meta_key = '".$this->meta_prefix."???_id' AND meta_value = '%d'", $this->post_type_item, $data['post_status'], $this->id));
+		return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." WHERE post_type = %s AND post_status = %s AND post_parent = '%d'", $this->post_type, $data['post_status'], $this->id));
+	}
+
 	function column_cell($col, $id)
 	{
-		/*global $wpdb, $post;
+		global $wpdb, $post;
 
 		switch($post->post_type)
 		{
-			case $this->post_type:*/
+			case $this->post_type:
 				switch($col)
 				{
-					case 'downloaded':
-						/*$post_domain = get_post_meta($id, $this->meta_prefix.'domain', true);
+					/*case 'downloaded':
+						$amount_downloaded = $this->get_amount(array('id' => $id));
 
-						list($upload_path, $upload_url) = get_uploads_folder("mf_backup/sites/".remove_protocol(array('url' => $post_domain, 'clean' => true)));*/
-
-						$arr_post_downloaded = get_post_meta_or_default($id, $this->meta_prefix.'downloaded', true, array());
-
-						$count_temp = count($arr_post_downloaded);
-
-						if($count_temp > 0)
+						if($amount_downloaded > 0)
 						{
-							echo $count_temp;
+							echo "<a href='".admin_url("edit.php?post_type=".$this->post_type_post."&strFilterBackup=".$id)."'>".$amount_downloaded."</a>";
 
-							$last_backup_file_time = DEFAULT_DATE;
+							$post_latest = $wpdb->get_var($wpdb->prepare("SELECT post_date FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d' ORDER BY post_date DESC LIMIT 0, 1", $this->post_type, $id));
 
-							foreach($arr_post_downloaded as $file_downloaded)
+							if($post_latest > DEFAULT_DATE)
 							{
-								if($file_downloaded['time'] > $last_backup_file_time)
-								{
-									$last_backup_file_time = $file_downloaded['time'];
-								}
-							}
-
-							if($last_backup_file_time > DEFAULT_DATE)
-							{
-								echo "<div class='row-actions'>
-									<span class='time'>".__("Last Backup", 'lang_backup').": ".format_date($last_backup_file_time)."</span>
-								</div>";
+								echo "<div class='row-actions'>"
+									.__("Latest", 'lang_backup').": ".format_date($post_latest)
+								."</div>";
 							}
 						}
-					break;
+					break;*/
 
 					case 'last_fetched':
 						$post_meta = get_post_meta($id, $this->meta_prefix.'last_fetched', true);
@@ -1194,10 +1382,79 @@ class mf_backup
 						{
 							echo format_date($post_meta);
 						}
+
+						else
+						{
+							$post_meta = get_post_meta($id, $this->meta_prefix.'time', true);
+
+							if($post_meta > DEFAULT_DATE)
+							{
+								echo format_date($post_meta);
+							}
+						}
 					break;
 				}
-			/*break;
-		}*/
+			break;
+
+			/*case $this->post_type_item:
+				switch($col)
+				{
+					case 'size':
+						$post_meta = get_post_meta($id, $this->meta_prefix.'size', true);
+
+						if($post_meta > 0)
+						{
+							echo show_final_size($post_meta);
+						}
+					break;
+
+					case 'time':
+						$post_meta = get_post_meta($id, $this->meta_prefix.'time', true);
+
+						if($post_meta > DEFAULT_DATE)
+						{
+							echo format_date($post_meta);
+						}
+					break;
+				}
+			break;*/
+		}
+	}
+
+	function wp_trash_post($post_id)
+	{
+		global $wpdb;
+
+		if(get_post_type($post_id) == $this->post_type)
+		{
+			$post_meta = get_post_meta($post_id, $this->meta_prefix.'url', true);
+
+			if($post_meta != '')
+			{
+				list($upload_path, $upload_url) = get_uploads_folder('mf_backup');
+
+				$post_meta = str_replace($upload_url, $upload_path, $post_meta);
+
+				do_log("Remove the file ".$post_meta);
+
+				//unlink($post_meta);
+			}
+
+			/*$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d'", $this->post_type_item, $post_id));
+
+			foreach($result as $r)
+			{
+				wp_trash_post($r->ID);
+			}*/
+		}
+	}
+
+	function filter_last_updated_post_types($array, $type)
+	{
+		$array[] = $this->post_type;
+		//$array[] = $this->post_type_item;
+
+		return $array;
 	}
 
 	function perform_backup()
