@@ -25,13 +25,18 @@ else
 {
 	switch($type)
 	{
-		case 'backups':
-			$obj_backup->remove_backup_htaccess();
+		case 'get_backups':
+		case 'backups': // Can be removed later...
+			$obj_backup->change_backup_htaccess('rename');
 
 			$obj_backup = new mf_backup();
 
 			$json_output['success'] = true;
 			$json_output['data'] = $obj_backup->get_backup_list(array('output' => 'json'));
+		break;
+
+		case 'end_backup':
+			$obj_backup->change_backup_htaccess('restore');
 		break;
 	}
 }

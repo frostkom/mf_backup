@@ -60,24 +60,71 @@ class mf_backup
 		return $out;
 	}
 
-	function remove_backup_htaccess()
+	function change_backup_htaccess($type)
 	{
+		switch($type)
+		{
+			case 'remove':
+				$filename = ".htaccess";
+			break;
+
+			case 'rename':
+				$filename = ".htaccess";
+				$filename_change = ".htaccess_temp";
+			break;
+
+			case 'restore':
+				$filename = ".htaccess_temp";
+				$filename_change = ".htaccess";
+			break;
+		}
+
 		list($upload_path, $upload_url) = get_uploads_folder();
 
 		$backup_dir = $this->get_backup_dir();
-		$backup_htaccess = str_replace("uploads/", $upload_path, $backup_dir.".htaccess");
+		$backup_htaccess = str_replace("uploads/", $upload_path, $backup_dir.$file_name);
 
 		if(file_exists($backup_htaccess))
 		{
 			//After a new plugin release backwpup_jobs might not be the same as previuosly expected, so this will remove .htaccess from the WP root
 			if(preg_match("/uploads/", $backup_htaccess))
 			{
-				unlink($backup_htaccess);
+				switch($type)
+				{
+					case 'remove':
+						unlink($backup_htaccess);
+					break;
+
+					case 'rename':
+					case 'restore':
+						$backup_htaccess_change = str_replace("uploads/", $upload_path, $backup_dir.$filename_change);
+
+						if(file_exists($backup_htaccess_change))
+						{
+							unlink($backup_htaccess);
+						}
+
+						else
+						{
+							rename($backup_htaccess, $backup_htaccess_change);
+						}
+					break;
+				}				
 			}
 
 			else
 			{
-				do_log("Remove ".$backup_htaccess." but make sure that it is not the one in the WP root");
+				switch($type)
+				{
+					case 'remove':
+						do_log("Remove ".$backup_htaccess." but make sure that it is not the one in the WP root");
+					break;
+
+					case 'rename':
+					case 'restore':
+						do_log("Rename ".$backup_htaccess." to ".$backup_htaccess_change." but make sure that it is not the one in the WP root");
+					break;
+				}
 			}
 		}
 	}
@@ -616,9 +663,7 @@ class mf_backup
 
 					if($post_domain != '' && $post_api_key != '')
 					{
-						//$arr_post_downloaded = get_post_meta_or_default($post_id, $this->meta_prefix.'downloaded', true, array());
-
-						$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=backups&authkey=".$post_api_key;
+						$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$post_api_key;
 
 						list($content, $headers) = get_url_content(array(
 							'url' => $url,
@@ -669,8 +714,6 @@ class mf_backup
 
 												else
 												{
-													//$arr_post_downloaded[$file_name] = $item;
-
 													$item_temp = $item;
 													$item_temp['parent_id'] = $post_id;
 													$this->add_item($item_temp);
@@ -684,8 +727,6 @@ class mf_backup
 												if($success)
 												{
 													//do_log("Downloaded ".$file_name." to ".$file_dir);
-
-													//$arr_post_downloaded[$file_name] = $item;
 
 													$item_temp = $item;
 													$item_temp['parent_id'] = $post_id;
@@ -701,7 +742,8 @@ class mf_backup
 									}
 
 									update_post_meta($post_id, $this->meta_prefix.'last_fetched', date("Y-m-d H:i:s"));
-									//update_post_meta($post_id, $this->meta_prefix.'downloaded', $arr_post_downloaded);
+
+									// Can be removed later...
 									delete_post_meta($post_id, $this->meta_prefix.'downloaded');
 
 									if($this->get_amount(array('id' => $post_id)) > $post_limit_amount)
@@ -710,6 +752,13 @@ class mf_backup
 									}
 
 									do_log($log_message, 'trash');
+
+									$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=end_backup&authkey=".$post_api_key;
+
+									list($content, $headers) = get_url_content(array(
+										'url' => $url,
+										'catch_head' => true,
+									));
 								}
 
 								else
@@ -1084,7 +1133,7 @@ class mf_backup
 			break;
 
 			case 'xml':
-				$this->remove_backup_htaccess();
+				$this->remove_backup_htaccess('rename');
 
 				foreach($backup_files as $file)
 				{
@@ -1127,16 +1176,17 @@ class mf_backup
 
 		else
 		{
-			if($this->get_backup_list(array('output' => 'htaccess')) == true)
+			/*if($this->get_backup_list(array('output' => 'htaccess')) == true)
 			{
 				$backup_dir = $this->get_backup_dir();
 
 				echo "<p><i class='fa fa-exclamation-triangle yellow'></i> ".sprintf(__("You have to delete the %s file from (%s) the backup folders which you want to be able to download backups from", 'lang_backup'), ".htaccess", $backup_dir)."</p>";
-			}
+			}*/
 
+			$api_url = get_site_url()."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$authkey;
 			$rss_url = get_site_url()."/wp-content/plugins/mf_backup/include/feed.php?authkey=".$authkey;
 
-			echo "<p><a href='".$rss_url."' class='button'>".__("RSS Link", 'lang_backup')."</a></p>
+			echo "<p><a href='".$api_url."' class='button'>".__("API Link", 'lang_backup')."</a> <a href='".$rss_url."' class='button'>".__("RSS Link", 'lang_backup')."</a></p>
 			<h4>".sprintf(__("Instructions to download backups to a %s", 'lang_backup'), "Synology NAS")."</h4>";
 
 			echo "<ol>
@@ -1228,7 +1278,7 @@ class mf_backup
 
 				if($post_domain != '' && $post_api_key != '')
 				{
-					$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=backups&authkey=".$post_api_key;
+					$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$post_api_key;
 
 					$actions['source'] = "<a href='".$url."'>".__("Source", 'lang_backup')."</a>";
 				}
@@ -1352,7 +1402,6 @@ class mf_backup
 		switch($post_type)
 		{
 			case $this->post_type:
-				//$cols['downloaded'] = __("Downloaded", 'lang_backup');
 				$cols['size'] = __("Size", 'lang_backup');
 				$cols['last_fetched'] = __("Last Updated", 'lang_backup');
 			break;
@@ -1392,24 +1441,6 @@ class mf_backup
 			case $this->post_type:
 				switch($col)
 				{
-					/*case 'downloaded':
-						$amount_downloaded = $this->get_amount(array('id' => $id));
-
-						if($amount_downloaded > 0)
-						{
-							echo "<a href='".admin_url("edit.php?post_type=".$this->post_type_post."&strFilterBackup=".$id)."'>".$amount_downloaded."</a>";
-
-							$post_latest = $wpdb->get_var($wpdb->prepare("SELECT post_date FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d' ORDER BY post_date DESC LIMIT 0, 1", $this->post_type, $id));
-
-							if($post_latest > DEFAULT_DATE)
-							{
-								echo "<div class='row-actions'>"
-									.__("Latest", 'lang_backup').": ".format_date($post_latest)
-								."</div>";
-							}
-						}
-					break;*/
-
 					case 'size':
 						$post_meta = get_post_meta($id, $this->meta_prefix.'size', true);
 

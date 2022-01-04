@@ -23,7 +23,7 @@ if($authkey_sent != $authkey_db)
 
 else
 {
-	$obj_backup->remove_backup_htaccess();
+	//$obj_backup->change_backup_htaccess('remove');
 
 	header('Content-Type: '.feed_content_type('rss-http').'; charset='.get_option('blog_charset'), true);
 
