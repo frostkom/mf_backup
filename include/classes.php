@@ -5,7 +5,6 @@ class mf_backup
 	function __construct()
 	{
 		$this->post_type = 'mf_backup';
-		//$this->post_type_item = $this->post_type.'_item';
 		$this->meta_prefix = $this->post_type.'_';
 	}
 
@@ -47,7 +46,7 @@ class mf_backup
 	{
 		$out = "";
 
-		$option = is_multisite() ? get_site_option('backwpup_jobs') : get_option('backwpup_jobs');
+		$option = (is_multisite() ? get_site_option('backwpup_jobs') : get_option('backwpup_jobs'));
 
 		foreach($option as $key => $value)
 		{
@@ -460,8 +459,6 @@ class mf_backup
 	{
 		$version = 4;
 
-		//do_log("Copy ".$file_source." -> ".$file_target);
-
 		switch($version)
 		{
 			case 1:
@@ -481,8 +478,6 @@ class mf_backup
 					{
 						return false;
 					}
-
-					//echo ' ';
 
 					flush();
 				}
@@ -554,7 +549,7 @@ class mf_backup
 
 	function add_item($item)
 	{
-		global $wpdb; //, $post_id
+		global $wpdb;
 
 		$post_data = array(
 			'post_title' => $item['name'],
@@ -568,7 +563,6 @@ class mf_backup
 			),
 		);
 
-		//$wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_parent = '%d' AND meta_key = %s AND meta_value = %s", $item['parent_id'], $this->meta_prefix.'url', $item['url']));
 		$wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_parent = '%d' AND post_title = %s", $item['parent_id'], $item['name']));
 
 		if($wpdb->num_rows > 0)
@@ -599,20 +593,6 @@ class mf_backup
 		{
 			$post_id = wp_insert_post($post_data);
 		}
-
-		/*
-
-		$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_type = %s AND post_status = %s AND (post_title = %s OR post_name = %s) AND post_parent = '%d'", $this->post_type_post, 'publish', $post_title, $post_name, $this->id));
-
-		if($wpdb->num_rows == 0)
-		{
-			
-		}
-
-		else
-		{
-			
-		}*/
 	}
 
 	function cron_base()
@@ -689,8 +669,6 @@ class mf_backup
 
 									foreach($json['data'] as $item)
 									{
-										//do_log("Test: ".$item['url']." to ".$upload_path);
-
 										$file_url = $item['url'];
 
 										$file_name = basename($file_url);
@@ -707,8 +685,6 @@ class mf_backup
 											{
 												if(isset($item['size']) && $item['size'] != filesize($file_dir))
 												{
-													//do_log("Already exists in ".$file_dir." BUT has different size (".show_final_size($item['size'])." != ".show_final_size(filesize($file_dir)).")");
-
 													unlink($file_dir);
 												}
 
@@ -726,8 +702,6 @@ class mf_backup
 
 												if($success)
 												{
-													//do_log("Downloaded ".$file_name." to ".$file_dir);
-
 													$item_temp = $item;
 													$item_temp['parent_id'] = $post_id;
 													$this->add_item($item_temp);
@@ -1137,12 +1111,7 @@ class mf_backup
 
 				foreach($backup_files as $file)
 				{
-					/*if($file['name'] == ".htaccess")
-					{
-						unlink($file['path']);
-					}
-
-					else */if(!in_array($file['name'], $arr_file_exclude))
+					if(!in_array($file['name'], $arr_file_exclude))
 					{
 						echo "<item>
 							<title>".$file['name']."</title>
@@ -1238,31 +1207,6 @@ class mf_backup
 		return $arr_settings;
 	}
 
-	/*function admin_menu()
-	{
-		$menu_root = 'mf_backup/';
-		$menu_start = "edit.php?post_type=".$this->post_type;
-		$menu_capability = override_capability(array('page' => $menu_start, 'default' => 'edit_pages'));
-
-		$menu_title = __("Backup", 'lang_backup');
-		add_menu_page("", $menu_title, $menu_capability, $menu_start, '', 'dashicons-backup', 100);
-
-		$menu_title = __("Lists", 'lang_backup');
-		add_submenu_page($menu_start, $menu_title, $menu_title, $menu_capability, $menu_start);
-
-		$menu_title = __("Add New", 'lang_backup');
-		add_submenu_page($menu_start, $menu_title, " - ".$menu_title, $menu_capability, "post-new.php?post_type=".$this->post_type);
-
-		if(does_post_exists(array('post_type' => $this->post_type)))
-		{
-			$menu_title = __("Items", 'lang_backup');
-			add_submenu_page($menu_start, $menu_title, $menu_title, $menu_capability, "edit.php?post_type=".$this->post_type_item);
-
-			$menu_title = __("Add New", 'lang_backup');
-			add_submenu_page($menu_root, $menu_title, " - ".$menu_title, $menu_capability, "post-new.php?post_type=".$this->post_type_item);
-		}
-	}*/
-
 	function row_actions($actions, $post)
 	{
 		if($post->post_type == $this->post_type)
@@ -1271,24 +1215,21 @@ class mf_backup
 
 			unset($actions['inline hide-if-no-js']);
 
-			/*if($post->post_status == 'publish')
-			{*/
-				$post_domain = get_post_meta($post_id, $this->meta_prefix.'domain', true);
-				$post_api_key = get_post_meta($post_id, $this->meta_prefix.'api_key', true);
+			$post_domain = get_post_meta($post_id, $this->meta_prefix.'domain', true);
+			$post_api_key = get_post_meta($post_id, $this->meta_prefix.'api_key', true);
 
-				if($post_domain != '' && $post_api_key != '')
-				{
-					$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$post_api_key;
+			if($post_domain != '' && $post_api_key != '')
+			{
+				$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$post_api_key;
 
-					$actions['source'] = "<a href='".$url."'>".__("Source", 'lang_backup')."</a>";
-				}
+				$actions['source'] = "<a href='".$url."'>".__("Source", 'lang_backup')."</a>";
+			}
 
-				else
-				{
-					unset($actions['edit']);
-					//unset($actions['trash']);
-				}
-			//}
+			else
+			{
+				unset($actions['edit']);
+				//unset($actions['trash']);
+			}
 		}
 
 		return $actions;
@@ -1331,67 +1272,8 @@ class mf_backup
 			)
 		);
 
-		/*$meta_boxes[] = array(
-			'id' => $this->meta_prefix.'settings',
-			'title' => __("Settings", 'lang_backup'),
-			'post_types' => array($this->post_type_item),
-			'context' => 'normal',
-			'priority' => 'low',
-			'fields' => array(
-				array(
-					'name' => __("Domain", 'lang_backup'),
-					'id' => $this->meta_prefix.'url',
-					'type' => 'url',
-				),
-				array(
-					'name' => __("API Key", 'lang_backup'),
-					'id' => $this->meta_prefix.'size',
-					'type' => 'number',
-				),
-			)
-		);*/
-
 		return $meta_boxes;
 	}
-
-	/*function restrict_manage_posts()
-	{
-		global $post_type;
-
-		if($post_type == $this->post_type_item)
-		{
-			$strFilterBackup = check_var('strFilterBackup');
-
-			$arr_data = array();
-			get_post_children(array('post_type' => $this->post_type, 'post_status' => '', 'add_choose_here' => true), $arr_data);
-
-			if(count($arr_data) > 2)
-			{
-				echo show_select(array('data' => $arr_data, 'name' => 'strFilterBackup', 'value' => $strFilterBackup));
-			}
-		}
-	}
-
-	function pre_get_posts($wp_query)
-	{
-		global $post_type, $pagenow;
-
-		if($pagenow == 'edit.php' && $post_type == $this->post_type_post)
-		{
-			$strFilterBackup = check_var('strFilterBackup');
-
-			if($strFilterBackup != '')
-			{
-				$wp_query->query_vars['meta_query'] = array(
-					array(
-						'key' => $this->meta_prefix.'???_id',
-						'value' => $strFilterBackup,
-						'compare' => '=',
-					),
-				);
-			}
-		}
-	}*/
 
 	function column_header($cols)
 	{
@@ -1405,12 +1287,6 @@ class mf_backup
 				$cols['size'] = __("Size", 'lang_backup');
 				$cols['last_fetched'] = __("Last Updated", 'lang_backup');
 			break;
-
-			/*case $this->post_type_item:
-				$cols['url'] = __("URL", 'lang_backup');
-				$cols['size'] = __("Size", 'lang_backup');
-				$cols['time'] = __("Time", 'lang_backup');
-			break;*/
 		}
 
 		return $cols;
@@ -1421,14 +1297,13 @@ class mf_backup
 		global $wpdb;
 
 		if(!isset($data['id'])){			$data['id'] = 0;}
-		if(!isset($data['post_status'])){	$data['post_status'] = 'publish';}
+		//if(!isset($data['post_status'])){	$data['post_status'] = 'publish';}
 
 		if($data['id'] > 0)
 		{
 			$this->id = $data['id'];
 		}
 
-		//return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_type = %s AND post_status = %s AND meta_key = '".$this->meta_prefix."???_id' AND meta_value = '%d'", $this->post_type_item, $data['post_status'], $this->id));
 		return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d'", $this->post_type, $this->id)); // AND post_status = %s //, $data['post_status']
 	}
 
@@ -1485,29 +1360,6 @@ class mf_backup
 					break;
 				}
 			break;
-
-			/*case $this->post_type_item:
-				switch($col)
-				{
-					case 'size':
-						$post_meta = get_post_meta($id, $this->meta_prefix.'size', true);
-
-						if($post_meta > 0)
-						{
-							echo show_final_size($post_meta);
-						}
-					break;
-
-					case 'time':
-						$post_meta = get_post_meta($id, $this->meta_prefix.'time', true);
-
-						if($post_meta > DEFAULT_DATE)
-						{
-							echo format_date($post_meta);
-						}
-					break;
-				}
-			break;*/
 		}
 	}
 
@@ -1526,23 +1378,14 @@ class mf_backup
 				$post_meta = str_replace($upload_url, $upload_path, $post_meta);
 
 				do_log("Remove the file ".$post_meta);
-
 				//unlink($post_meta);
 			}
-
-			/*$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d'", $this->post_type_item, $post_id));
-
-			foreach($result as $r)
-			{
-				wp_trash_post($r->ID);
-			}*/
 		}
 	}
 
 	function filter_last_updated_post_types($array, $type)
 	{
 		$array[] = $this->post_type;
-		//$array[] = $this->post_type_item;
 
 		return $array;
 	}
