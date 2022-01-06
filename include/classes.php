@@ -554,7 +554,7 @@ class mf_backup
 		$post_data = array(
 			'post_title' => $item['name'],
 			'post_parent' => $item['parent_id'],
-			'post_type' => $obj_backup->post_type,
+			'post_type' => $this->post_type,
 			'post_status' => 'publish',
 			'meta_input' => array(
 				$this->meta_prefix.'url' => $item['url'],
@@ -563,7 +563,7 @@ class mf_backup
 			),
 		);
 
-		$wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_parent = '%d' AND post_title = %s", $item['parent_id'], $item['name']));
+		$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_parent = '%d' AND post_title = %s", $item['parent_id'], $item['name']));
 
 		if($wpdb->num_rows > 0)
 		{
@@ -634,6 +634,65 @@ class mf_backup
 
 			if($wpdb->num_rows > 0)
 			{
+				list($upload_path_base, $upload_url_base) = get_uploads_folder("mf_backup/sites");
+
+				if(!file_exists($upload_path_base.".htaccess"))
+				{
+					//set_file_content(); //$upload_path_base.".htaccess"
+					#############################
+					global $obj_base;
+
+					if(!isset($obj_base))
+					{
+						$obj_base = new mf_base();
+					}
+
+					$html = $update_with = "";
+
+					switch($obj_base->get_server_type())
+					{
+						default:
+						case 'apache':
+							$update_with = "<Files \"*\">\r\n"
+							."	<IfModule mod_access.c>\r\n"
+							."		Deny from all\r\n"
+							."	</IfModule>\r\n"
+							."	<IfModule !mod_access_compat>\r\n"
+							."		<IfModule mod_authz_host.c>\r\n"
+							."			Deny from all\r\n"
+							."		</IfModule>\r\n"
+							."	</IfModule>\r\n"
+							."	<IfModule mod_access_compat>\r\n"
+							."		Deny from all\r\n"
+							."	</IfModule>\r\n"
+							."</Files>\r\n";
+						break;
+
+						case 'nginx':
+							// What do I do here?
+							$update_with = "";
+						break;
+					}
+
+					$html .= $obj_base->update_config(array(
+						'plugin_name' => "MF Backup",
+						'file' => $upload_path_base.".htaccess",
+						'update_with' => $update_with,
+						'auto_update' => true,
+					));
+
+					if($html == '')
+					{
+						do_log("Added .htaccess to ".$upload_path_base." folder to prevent download");
+					}
+
+					else
+					{
+						do_log("I could not add .htaccess to ".$upload_path_base." folder to prevent download (".nl2br($html).")");
+					}
+					#############################
+				}
+
 				foreach($result as $r)
 				{
 					$post_id = $r->ID;
@@ -660,8 +719,6 @@ class mf_backup
 								if(isset($json['success']) && $json['success'] == true)
 								{
 									list($upload_path, $upload_url) = get_uploads_folder("mf_backup/sites/".remove_protocol(array('url' => $post_domain, 'clean' => true)));
-
-									//do_log("Add .htaccess to mf_backup/sites/ folder to prevent download");
 
 									$post_limit_amount = count($json['data']);
 

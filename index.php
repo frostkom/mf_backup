@@ -3,7 +3,7 @@
 Plugin Name: MF Backup
 Plugin URI: https://github.com/frostkom/mf_backup
 Description: 
-Version: 2.2.12
+Version: 2.2.13
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://frostkom.se
