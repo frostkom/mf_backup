@@ -67,6 +67,7 @@ class mf_backup
 				$filename = ".htaccess";
 			break;
 
+			default:
 			case 'rename':
 				$filename = ".htaccess";
 				$filename_change = ".htaccess_temp";
@@ -1164,7 +1165,7 @@ class mf_backup
 			break;
 
 			case 'xml':
-				$this->remove_backup_htaccess('rename');
+				$this->change_backup_htaccess('rename');
 
 				foreach($backup_files as $file)
 				{
