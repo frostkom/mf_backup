@@ -81,7 +81,7 @@ class mf_backup
 		list($upload_path, $upload_url) = get_uploads_folder();
 
 		$backup_dir = $this->get_backup_dir();
-		$backup_htaccess = str_replace("uploads/", $upload_path, $backup_dir.$file_name);
+		$backup_htaccess = str_replace("uploads/", $upload_path, $backup_dir.$filename);
 
 		if(file_exists($backup_htaccess))
 		{
