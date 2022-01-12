@@ -26,7 +26,6 @@ else
 	switch($type)
 	{
 		case 'get_backups':
-		case 'backups': // Can be removed later...
 			$obj_backup->change_backup_htaccess('rename');
 
 			$obj_backup = new mf_backup();

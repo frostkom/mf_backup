@@ -109,7 +109,7 @@ class mf_backup
 							rename($backup_htaccess, $backup_htaccess_change);
 						}
 					break;
-				}				
+				}
 			}
 
 			else
@@ -558,7 +558,8 @@ class mf_backup
 			'post_type' => $this->post_type,
 			'post_status' => 'publish',
 			'meta_input' => array(
-				$this->meta_prefix.'url' => $item['url'],
+				//$this->meta_prefix.'url' => $item['url'],
+				$this->meta_prefix.'path' => $item['path'],
 				$this->meta_prefix.'size' => $item['size'],
 				$this->meta_prefix.'time' => $item['time'],
 			),
@@ -727,47 +728,49 @@ class mf_backup
 
 									foreach($json['data'] as $item)
 									{
-										$file_url = $item['url'];
+										$file_remote_url = $item['url'];
 
-										$file_name = basename($file_url);
-										$file_dir = $upload_path.$file_name;
+										$file_name = basename($file_remote_url);
+										$file_local_path = $upload_path.$file_name;
 
-										if($file_name == ".htaccess")
+										if($file_name == ".htaccess" || $file_name == ".htaccess_temp")
 										{
-											do_log("Ignore file (".$file_name.") from ".$url);
+											//do_log("Ignore file (".$file_name.") from ".$url);
 										}
 
 										else
 										{
-											if(file_exists($file_dir) && filesize($file_dir) > 0)
+											if(file_exists($file_local_path) && filesize($file_local_path) > 0)
 											{
-												if(isset($item['size']) && $item['size'] != filesize($file_dir))
+												if(isset($item['size']) && $item['size'] != filesize($file_local_path))
 												{
-													unlink($file_dir);
+													unlink($file_local_path);
 												}
 
 												else
 												{
 													$item_temp = $item;
 													$item_temp['parent_id'] = $post_id;
+													$item_temp['path'] = $file_local_path;
 													$this->add_item($item_temp);
 												}
 											}
 
-											if(!file_exists($file_dir))
+											if(!file_exists($file_local_path))
 											{
-												$success = $this->download_file($file_url, $file_dir);
+												$success = $this->download_file($file_remote_url, $file_local_path);
 
 												if($success)
 												{
 													$item_temp = $item;
 													$item_temp['parent_id'] = $post_id;
+													$item_temp['path'] = $file_local_path;
 													$this->add_item($item_temp);
 												}
 
 												else
 												{
-													do_log("NOT downloaded ".$file_name." to ".$file_dir);
+													do_log("NOT downloaded ".$file_name." to ".$file_local_path);
 												}
 											}
 										}
@@ -775,12 +778,17 @@ class mf_backup
 
 									update_post_meta($post_id, $this->meta_prefix.'last_fetched', date("Y-m-d H:i:s"));
 
-									// Can be removed later...
-									delete_post_meta($post_id, $this->meta_prefix.'downloaded');
-
 									if($this->get_amount(array('id' => $post_id)) > $post_limit_amount)
 									{
-										do_log("Remove the oldest backup for ".$post_domain);
+										//do_log("Remove the oldest backup for ".$post_domain);
+
+										$backup_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_type = %s AND post_parent = '%d' AND meta_key = %s ORDER BY meta_value ASC LIMIT 0, 1", $this->post_type, $post_id, $this->meta_prefix.'time'));
+
+										if($backup_id > 0)
+										{
+											wp_trash_post($backup_id);
+											//do_log("Trash ".$backup_id." (".get_post_title($backup_id).")");
+										}
 									}
 
 									do_log($log_message, 'trash');
@@ -1111,7 +1119,7 @@ class mf_backup
 		$backup_files = $this->gather_backup_files();
 
 		$site_url = get_site_url();
-		$arr_file_exclude = array('.donotbackup', 'index.php');
+		$arr_file_exclude = array('.donotbackup', 'index.php', '.htaccess', '.htaccess_temp');
 
 		switch($data['output'])
 		{
@@ -1317,10 +1325,15 @@ class mf_backup
 					'type' => 'text',
 				),
 				// Children
-				array(
+				/*array(
 					'name' => __("URL", 'lang_backup'),
 					'id' => $this->meta_prefix.'url',
 					'type' => 'url',
+				),*/
+				array(
+					'name' => __("Path", 'lang_backup'),
+					'id' => $this->meta_prefix.'path',
+					'type' => 'text',
 				),
 				array(
 					'name' => __("Size", 'lang_backup'),
@@ -1336,7 +1349,7 @@ class mf_backup
 	function column_header($cols)
 	{
 		global $post_type;
-		
+
 		unset($cols['date']);
 
 		switch($post_type)
@@ -1362,7 +1375,7 @@ class mf_backup
 			$this->id = $data['id'];
 		}
 
-		return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d'", $this->post_type, $this->id)); // AND post_status = %s //, $data['post_status']
+		return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d' AND post_status != %s", $this->post_type, $this->id, 'trash')); // AND post_status = %s //, $data['post_status']
 	}
 
 	function column_cell($col, $id)
@@ -1427,13 +1440,13 @@ class mf_backup
 
 		if(get_post_type($post_id) == $this->post_type)
 		{
-			$post_meta = get_post_meta($post_id, $this->meta_prefix.'url', true);
+			//$post_meta = get_post_meta($post_id, $this->meta_prefix.'url', true);
+			$post_meta = get_post_meta($post_id, $this->meta_prefix.'path', true);
 
 			if($post_meta != '')
 			{
-				list($upload_path, $upload_url) = get_uploads_folder('mf_backup');
-
-				$post_meta = str_replace($upload_url, $upload_path, $post_meta);
+				//list($upload_path, $upload_url) = get_uploads_folder('mf_backup');
+				//$post_meta = str_replace($upload_url, $upload_path, $post_meta);
 
 				do_log("Remove the file ".$post_meta);
 				//unlink($post_meta);
