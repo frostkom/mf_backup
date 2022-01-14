@@ -724,8 +724,6 @@ class mf_backup
 
 									$post_limit_amount = count($json['data']);
 
-									update_post_meta($post_id, $this->meta_prefix.'limit_amount', $post_limit_amount);
-
 									foreach($json['data'] as $item)
 									{
 										$file_remote_url = $item['url'];
@@ -736,6 +734,7 @@ class mf_backup
 										if($file_name == ".htaccess" || $file_name == ".htaccess_temp")
 										{
 											//do_log("Ignore file (".$file_name.") from ".$url);
+											$post_limit_amount--;
 										}
 
 										else
@@ -776,6 +775,7 @@ class mf_backup
 										}
 									}
 
+									update_post_meta($post_id, $this->meta_prefix.'limit_amount', $post_limit_amount);
 									update_post_meta($post_id, $this->meta_prefix.'last_fetched', date("Y-m-d H:i:s"));
 
 									if($this->get_amount(array('id' => $post_id)) > $post_limit_amount)
