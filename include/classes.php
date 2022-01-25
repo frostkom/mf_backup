@@ -50,7 +50,7 @@ class mf_backup
 
 		foreach($option as $key => $value)
 		{
-			if(isset($value['backupdir']))
+			if(isset($value['backupdir']) && $value['backupdir'] != $out)
 			{
 				$out .= ($out != '' ? ", " : "").$value['backupdir'];
 			}
@@ -461,126 +461,57 @@ class mf_backup
 		return $success;
 	}
 
-	function download_file($data) //$file_source, $file_target, $try = 1
+	function download_file($data)
 	{
 		if(!isset($data['try'])){	$data['try'] = 1;}
 
-		//$version = 4;
 		$target_size = 0;
 
-		/*switch($version)
+		$fp = fopen($data['target'], 'w+');
+
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL, $data['source']);
+
+		# set return transfer to false
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+		curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+
+		# increase timeout to download big file
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+		curl_setopt($ch, CURLOPT_FILE, $fp);
+
+		# execute curl
+		curl_exec($ch);
+
+		$headers = curl_getinfo($ch);
+
+		curl_close($ch);
+		fclose($fp);
+
+		switch($headers['http_code'])
 		{
-			case 1:
-				$rh = fopen($data['source'], 'rb');
-				$wh = fopen($data['target'], 'w+b');
-
-				if(!$rh || !$wh)
+			case 301:
+				if(isset($headers['redirect_url']) && $headers['redirect_url'] != $data['source'])
 				{
-					return false;
-				}
-
-				while(!feof($rh))
-				{
-					set_time_limit(0);
-
-					if(fwrite($wh, fread($rh, 4096)) === FALSE)
+					if($data['try'] > 2)
 					{
-						return false;
+						do_log("I was redirected from ".$data['source']." for the ".$data['try']." time to ".$headers['redirect_url']." so I QUIT! I am done!");
 					}
 
-					flush();
+					else
+					{
+						unlink($data['target']);
+
+						$data['source'] = $headers['redirect_url'];
+						$data['try']++;
+						$this->download_file($data);
+					}
 				}
-
-				fclose($rh);
-				fclose($wh);
 			break;
+		}
 
-			// Does not work yet
-			case 2:
-				//This is the file where we save the information
-				$fp = fopen($data['target'], 'w+');
-
-				//Here is the file we are downloading, replace spaces with %20
-				$ch = curl_init(str_replace(" ", "%20", $data['source']));
-
-				curl_setopt($ch, CURLOPT_TIMEOUT, 50);
-
-				// write curl response to file
-				curl_setopt($ch, CURLOPT_FILE, $fp);
-				curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-
-				// get curl response
-				curl_exec($ch);
-				curl_close($ch);
-
-				fclose($fp);
-			break;
-
-			// Does not work yet
-			case 3:
-				$fp = fopen($data['target'], 'w');
-
-				$ch = curl_init($data['source']);
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-				curl_setopt($ch, CURLOPT_FILE, $fp);
-
-				$data = curl_exec($ch); 
-
-				curl_close($ch);
-
-				fclose($fp);
-			break;
-
-			case 4:*/
-				$fp = fopen($data['target'], 'w+');
-
-				$ch = curl_init();
-				curl_setopt($ch, CURLOPT_URL, $data['source']);
-
-				# set return transfer to false
-				curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
-				curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
-				curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-
-				# increase timeout to download big file
-				curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
-				curl_setopt($ch, CURLOPT_FILE, $fp);
-
-				# execute curl
-				curl_exec($ch);
-
-				$headers = curl_getinfo($ch);
-
-				curl_close($ch);
-				fclose($fp);
-
-				switch($headers['http_code'])
-				{
-					case 301:
-						if(isset($headers['redirect_url']) && $headers['redirect_url'] != $data['source'])
-						{
-							if($data['try'] > 2)
-							{
-								do_log("I was redirected from ".$data['source']." for the ".$data['try']." time to ".$headers['redirect_url']." so I QUIT! I am done!");
-							}
-
-							else
-							{
-								//do_log("I was redirected from ".$data['source']." for the ".$data['try']." time to ".$headers['redirect_url']);
-
-								unlink($data['source']);
-
-								$data['source'] = $headers['redirect_url'];
-								$data['try']++;
-								$this->download_file($data);
-							}
-						}
-					break;
-				}
-
-				$target_size = filesize($data['target']);
-			/*break;
-		}*/
+		$target_size = filesize($data['target']);
 
 		if($target_size == $data['source_size'])
 		{
@@ -603,7 +534,6 @@ class mf_backup
 			'post_type' => $this->post_type,
 			'post_status' => 'publish',
 			'meta_input' => array(
-				//$this->meta_prefix.'url' => $item['url'],
 				$this->meta_prefix.'path' => $item['path'],
 				$this->meta_prefix.'size' => $item['size'],
 				$this->meta_prefix.'time' => $item['time'],
@@ -778,7 +708,6 @@ class mf_backup
 
 										if($file_name == ".htaccess" || $file_name == ".htaccess_temp")
 										{
-											//do_log("Ignore file (".$file_name.") from ".$url);
 											$post_limit_amount--;
 										}
 
@@ -810,8 +739,6 @@ class mf_backup
 													$item_temp['parent_id'] = $post_id;
 													$item_temp['path'] = $file_local_path;
 													$this->add_item($item_temp);
-
-													//do_log("Downloaded ".$file_name." to ".$file_local_path);
 												}
 
 												else
@@ -829,12 +756,9 @@ class mf_backup
 									{
 										$backup_id = $wpdb->get_var($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_type = %s AND post_parent = '%d' AND post_status != %s AND meta_key = %s ORDER BY meta_value ASC LIMIT 0, 1", $this->post_type, $post_id, 'trash', $this->meta_prefix.'time'));
 
-										//do_log("Removed the oldest backup for ".$post_domain." (".$wpdb->last_query.")");
-
 										if($backup_id > 0)
 										{
 											wp_trash_post($backup_id);
-											//do_log("Trashed ".$backup_id." (".get_post_title($backup_id).")");
 										}
 									}
 
@@ -1372,11 +1296,6 @@ class mf_backup
 					'type' => 'text',
 				),
 				// Children
-				/*array(
-					'name' => __("URL", 'lang_backup'),
-					'id' => $this->meta_prefix.'url',
-					'type' => 'url',
-				),*/
 				array(
 					'name' => __("Path", 'lang_backup'),
 					'id' => $this->meta_prefix.'path',
@@ -1492,7 +1411,6 @@ class mf_backup
 			if($post_meta != '')
 			{
 				unlink($post_meta);
-				//do_log("Removed the file ".$post_meta);
 			}
 		}
 	}
