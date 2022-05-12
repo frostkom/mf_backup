@@ -1232,14 +1232,14 @@ class mf_backup
 
 	function filter_sites_table_settings($arr_settings)
 	{
-		$arr_settings['settings_backup'] = array(
+		/*$arr_settings['settings_backup'] = array(
 			'setting_backup_schedule' => array(
 				'type' => 'string',
 				'global' => true,
 				'icon' => "fas fa-download",
 				'name' => __("Schedule", 'lang_backup'),
 			),
-		);
+		);*/
 
 		return $arr_settings;
 	}
