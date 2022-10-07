@@ -2,7 +2,7 @@
 /*
 Plugin Name: MF Backup
 Plugin URI: https://github.com/frostkom/mf_backup
-Description: 
+Description:
 Version: 2.3.1
 Licence: GPLv2 or later
 Author: Martin Fors
@@ -60,7 +60,9 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 
 	function uninstall_backup()
 	{
-		global $obj_backup;
+		include_once("include/classes.php");
+
+		$obj_backup = new mf_backup();
 
 		mf_uninstall_plugin(array(
 			'uploads' => $obj_backup->post_type,

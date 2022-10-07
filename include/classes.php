@@ -615,8 +615,6 @@ class mf_backup
 
 				if(!file_exists($upload_path_base.".htaccess"))
 				{
-					// 
-					#############################
 					global $obj_base;
 
 					if(!isset($obj_base))
@@ -667,7 +665,6 @@ class mf_backup
 					{
 						do_log("I could not add .htaccess to ".$upload_path_base." folder to prevent download (".nl2br($html).")");
 					}
-					#############################
 				}
 
 				foreach($result as $r)
