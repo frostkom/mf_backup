@@ -676,14 +676,14 @@ class mf_backup
 
 					if($post_domain != '' && $post_api_key != '')
 					{
-						$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$post_api_key;
+						$url_get_backups = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$post_api_key;
 
 						list($content, $headers) = get_url_content(array(
-							'url' => $url,
+							'url' => $url_get_backups,
 							'catch_head' => true,
 						));
 
-						$log_message = sprintf("The response from %s had an error", $url);
+						$log_message = sprintf("The response from %s had an error", remove_protocol(array('url' => $post_domain, 'clean' => true, 'trim' => true)));
 
 						switch($headers['http_code'])
 						{
@@ -761,17 +761,15 @@ class mf_backup
 
 									do_log($log_message, 'trash');
 
-									$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=end_backup&authkey=".$post_api_key;
-
 									list($content, $headers) = get_url_content(array(
-										'url' => $url,
+										'url' => $post_domain."/wp-content/plugins/mf_backup/include/api/?type=end_backup&authkey=".$post_api_key,
 										'catch_head' => true,
 									));
 								}
 
 								else
 								{
-									do_log($log_message." (".var_export($json, true).")");
+									do_log($log_message." (".$url_get_backups." -> ".var_export($json, true).")");
 								}
 							break;
 
@@ -1254,9 +1252,7 @@ class mf_backup
 
 			if($post_domain != '' && $post_api_key != '')
 			{
-				$url = $post_domain."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$post_api_key;
-
-				$actions['source'] = "<a href='".$url."'>".__("Source", 'lang_backup')."</a>";
+				$actions['source'] = "<a href='".$post_domain."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$post_api_key."'>".__("Source", 'lang_backup')."</a>";
 			}
 
 			else
