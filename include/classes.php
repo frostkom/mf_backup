@@ -31,7 +31,7 @@ class mf_backup
 
 			$table_size = $wpdb->get_var($wpdb->prepare("SELECT (DATA_LENGTH + INDEX_LENGTH) FROM information_schema.TABLES WHERE table_schema = %s AND table_name = %s", DB_NAME, $table_id));
 
-			if($table_size > (1024 * 1024))
+			if($table_size > MB_IN_BYTES)
 			{
 				$table_name .= " (".show_final_size($table_size).")";
 			}
