@@ -9,26 +9,20 @@ if(!defined('ABSPATH'))
 	require_once($folder."wp-load.php");
 }
 
+require_once("../classes.php");
+
+$obj_backup = new mf_backup();
+
 $json_output = array();
 
 $type = check_var('type', 'char');
 
-$authkey_db = get_site_option('setting_rss_api_key');
-$authkey_sent = check_var('authkey');
-
-if($authkey_sent != $authkey_db)
-{
-	header("Status: 401 Unauthorized");
-}
-
-else
+if($obj_backup->authorize_api())
 {
 	switch($type)
 	{
 		case 'get_backups':
 			$obj_backup->change_backup_htaccess('rename');
-
-			$obj_backup = new mf_backup();
 
 			$json_output['success'] = true;
 			$json_output['data'] = $obj_backup->get_backup_list(array('output' => 'json'));

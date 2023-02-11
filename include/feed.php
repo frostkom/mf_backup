@@ -11,17 +11,7 @@ require_once("classes.php");
 
 $obj_backup = new mf_backup();
 
-$authkey_db = get_site_option('setting_rss_api_key');
-$authkey_sent = check_var('authkey');
-
-if($authkey_sent != $authkey_db)
-{
-	//do_log("Unauthorized BackWPup RSS");
-
-	header("Status: 401 Unauthorized");
-}
-
-else
+if($obj_backup->authorize_api())
 {
 	//$obj_backup->change_backup_htaccess('remove');
 

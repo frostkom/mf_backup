@@ -8,6 +8,34 @@ class mf_backup
 		$this->meta_prefix = $this->post_type.'_';
 	}
 
+	function authorize_api()
+	{
+		if(check_var('authkey') != get_site_option('setting_rss_api_key'))
+		{
+			header("Status: 401 Unauthorized because of key");
+
+			return false;
+		}
+
+		else
+		{
+			$setting_backup_rss_allowed_ips = get_site_option('setting_backup_rss_allowed_ips');
+			$arr_setting_backup_rss_allowed_ips = array_map('trim', explode(",", $setting_backup_rss_allowed_ips));
+
+			if(count($arr_setting_backup_rss_allowed_ips) > 0 && !in_array(get_current_visitor_ip(), $arr_setting_backup_rss_allowed_ips))
+			{
+				header("Status: 401 Unauthorized because of IP");
+
+				return false;
+			}
+
+			else
+			{
+				return true;
+			}
+		}
+	}
+
 	function get_tables_for_select($data = array())
 	{
 		global $wpdb;
@@ -524,23 +552,23 @@ class mf_backup
 		}
 	}
 
-	function add_item($item)
+	function add_item($arr_item)
 	{
 		global $wpdb;
 
 		$post_data = array(
-			'post_title' => $item['name'],
-			'post_parent' => $item['parent_id'],
+			'post_title' => $arr_item['name'],
+			'post_parent' => $arr_item['parent_id'],
 			'post_type' => $this->post_type,
 			'post_status' => 'publish',
 			'meta_input' => array(
-				$this->meta_prefix.'path' => $item['path'],
-				$this->meta_prefix.'size' => $item['size'],
-				$this->meta_prefix.'time' => $item['time'],
+				$this->meta_prefix.'path' => $arr_item['path'],
+				$this->meta_prefix.'size' => $arr_item['size'],
+				$this->meta_prefix.'time' => $arr_item['time'],
 			),
 		);
 
-		$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_parent = '%d' AND post_title = %s", $item['parent_id'], $item['name']));
+		$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_parent = '%d' AND post_title = %s", $arr_item['parent_id'], $arr_item['name']));
 
 		if($wpdb->num_rows > 0)
 		{
@@ -683,7 +711,7 @@ class mf_backup
 							'catch_head' => true,
 						));
 
-						$log_message = sprintf("The response from %s had an error", remove_protocol(array('url' => $post_domain, 'clean' => true, 'trim' => true)));
+						$log_message = sprintf("The response from %s had an error (%s)", remove_protocol(array('url' => $post_domain, 'clean' => true, 'trim' => true)), $url_get_backups);
 
 						switch($headers['http_code'])
 						{
@@ -696,9 +724,9 @@ class mf_backup
 
 									$post_limit_amount = count($json['data']);
 
-									foreach($json['data'] as $item)
+									foreach($json['data'] as $arr_item)
 									{
-										$file_remote_url = $item['url'];
+										$file_remote_url = $arr_item['url'];
 
 										$file_name = basename($file_remote_url);
 										$file_local_path = $upload_path.$file_name;
@@ -712,35 +740,43 @@ class mf_backup
 										{
 											if(file_exists($file_local_path) && filesize($file_local_path) > 0)
 											{
-												if(isset($item['size']) && $item['size'] != filesize($file_local_path))
+												if(isset($arr_item['size']) && $arr_item['size'] != filesize($file_local_path))
 												{
 													unlink($file_local_path);
 												}
 
 												else
 												{
-													$item_temp = $item;
-													$item_temp['parent_id'] = $post_id;
-													$item_temp['path'] = $file_local_path;
-													$this->add_item($item_temp);
+													$arr_item_temp = $arr_item;
+													$arr_item_temp['parent_id'] = $post_id;
+													$arr_item_temp['path'] = $file_local_path;
+													$this->add_item($arr_item_temp);
 												}
 											}
 
-											if(!file_exists($file_local_path))
+											if(file_exists($file_local_path))
 											{
-												$success = $this->download_file(array('source' => $file_remote_url, 'source_size' => $item['size'], 'target' => $file_local_path));
+												$arr_item_temp = $arr_item;
+												$arr_item_temp['parent_id'] = $post_id;
+												$arr_item_temp['path'] = $file_local_path;
+												$this->add_item($arr_item_temp);
+											}
+
+											else
+											{
+												$success = $this->download_file(array('source' => $file_remote_url, 'source_size' => $arr_item['size'], 'target' => $file_local_path));
 
 												if($success)
 												{
-													$item_temp = $item;
-													$item_temp['parent_id'] = $post_id;
-													$item_temp['path'] = $file_local_path;
-													$this->add_item($item_temp);
+													$arr_item_temp = $arr_item;
+													$arr_item_temp['parent_id'] = $post_id;
+													$arr_item_temp['path'] = $file_local_path;
+													$this->add_item($arr_item_temp);
 												}
 
 												else
 												{
-													do_log("NOT downloaded ".$file_name." (".$item['size'].") to ".$file_local_path." (".filesize($file_local_path).")");
+													do_log("NOT downloaded ".$file_name." (".$arr_item['size'].") to ".$file_local_path." (".filesize($file_local_path).")");
 												}
 											}
 										}
@@ -843,6 +879,7 @@ class mf_backup
 
 				if(get_site_option('setting_rss_api_key') != '')
 				{
+					$arr_settings['setting_backup_rss_allowed_ips'] = __("Allowed IPs", 'lang_backup');
 					$arr_settings['setting_rss_url'] = __("URL", 'lang_backup');
 				}
 			}
@@ -1030,6 +1067,15 @@ class mf_backup
 		$option = get_site_option($setting_key, get_option($setting_key));
 
 		echo show_password_field(array('name' => $setting_key, 'value' => $option, 'xtra' => " autocomplete='new-password'", 'suffix' => __("Create a custom key here, the more advanced the better to protect the feed and thus the backup files", 'lang_backup')));
+	}
+
+	function setting_backup_rss_allowed_ips_callback()
+	{
+		$setting_key = get_setting_key(__FUNCTION__);
+		settings_save_site_wide($setting_key);
+		$option = get_site_option($setting_key, get_option($setting_key));
+
+		echo show_textfield(array('name' => $setting_key, 'value' => $option, 'placeholder' => "123.456.789.000", 'description' => sprintf(__("Add %s to try it out in the browser", 'lang_backup'), get_current_visitor_ip())));
 	}
 
 	function get_backup_files($data)
@@ -1286,7 +1332,7 @@ class mf_backup
 				array(
 					'name' => __("API Key", 'lang_backup'),
 					'id' => $this->meta_prefix.'api_key',
-					'type' => 'text',
+					'type' => 'text', // Can't be password here because it will be saved wrongly
 				),
 				// Children
 				array(
