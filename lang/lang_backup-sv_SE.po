@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-02-11 06:22+0100\n"
+"POT-Creation-Date: 2023-03-14 16:24+0100\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Martin Fors\n"
 "Language-Team: \n"
@@ -15,209 +15,135 @@ msgstr ""
 "X-Poedit-Basepath: .\n"
 "X-Poedit-SearchPath-0: ..\n"
 
-#: ../include/classes.php:830
-#: ../include/classes.php:831
-#: ../include/classes.php:832
-#: ../include/classes.php:937
-#: ../include/classes.php:944
-msgid "Backup"
-msgstr ""
-
-#: ../include/classes.php:865
 msgid "Schedule"
 msgstr "Schemalägg"
 
-#: ../include/classes.php:866
 msgid "Number of backups to keep"
 msgstr "Antal backuper att spara"
 
-#: ../include/classes.php:871
 msgid "Sites"
 msgstr "Webbplatser"
 
-#: ../include/classes.php:874
 msgid "Perform Backup"
 msgstr "Genomför backup"
 
-#: ../include/classes.php:878
-#: ../include/classes.php:1333
 msgid "API Key"
 msgstr "API-nyckel"
 
-#: ../include/classes.php:882
 msgid "Allowed IPs"
 msgstr "Tillåtna IP"
 
-#: ../include/classes.php:883
-msgid "URL"
-msgstr ""
-
-#: ../include/classes.php:910
 msgid "Compression"
 msgstr "Kompression"
 
-#: ../include/classes.php:915
 msgid "What to backup from DB"
 msgstr "Vad från DB som ska sparas"
 
-#: ../include/classes.php:919
 msgid "Tables to Include"
 msgstr "Tabeller att inkludera"
 
-#: ../include/classes.php:944
 msgid "Database"
 msgstr "Databas"
 
-#: ../include/classes.php:954
 msgid "Inactivated"
 msgstr "Inaktiverad"
 
-#: ../include/classes.php:955
 msgid "Daily"
 msgstr "Varje dag"
 
-#: ../include/classes.php:956
 msgid "Weekly"
 msgstr "Varje vecka"
 
-#: ../include/classes.php:957
 msgid "Monthly"
 msgstr "Varje månad"
 
-#: ../include/classes.php:972
-#, php-format
 msgid "The backup was last run %s and will run again %s"
 msgstr "Backupen kördes senast %s och kommer att köras igen %s"
 
-#: ../include/classes.php:980
-#, php-format
 msgid "The backup has never been run but will be %s"
 msgstr "Backupen har aldrig körts men kommer att göra det %s"
 
-#: ../include/classes.php:1013
 msgid "No"
 msgstr "Nej"
 
-#: ../include/classes.php:1036
 msgid "All"
 msgstr "Allt"
 
-#: ../include/classes.php:1037
 msgid "Structure"
 msgstr "Struktur"
 
-#: ../include/classes.php:1038
-msgid "Data"
-msgstr ""
-
-#: ../include/classes.php:1052
 msgid "If none are chosen, all are backed up"
 msgstr "Om inga är valda, tas alla med i backupen"
 
-#: ../include/classes.php:1058
 msgid "Run"
 msgstr "Kör"
 
-#: ../include/classes.php:1069
 msgid "Create a custom key here, the more advanced the better to protect the feed and thus the backup files"
 msgstr "Skapa en egen nyckel här, ju mer avancerad desto bättre skydd för feeden och därmed för backup-filerna"
 
-#: ../include/classes.php:1078
-#, php-format
 msgid "Add %s to try it out in the browser"
 msgstr "Lägg till %s för att testa i webbläsaren"
 
-#: ../include/classes.php:1221
 msgid "You don't seam to have set an authorization key, please do so above"
 msgstr "Du verkar inte ha angett en nyckel, var vänlig gör det ovan"
 
-#: ../include/classes.php:1236
+msgid "You have to delete the %s file from (%s) the backup folders which you want to be able to download backups from"
+msgstr "Du behöver rader filen %s från (%s) backup-mappen som du vill kunna ladda ner backuper från"
+
 msgid "API Link"
 msgstr "API-länk"
 
-#: ../include/classes.php:1236
 msgid "RSS Link"
 msgstr "RSS-länk"
 
-#: ../include/classes.php:1237
-#, php-format
 msgid "Instructions to download backups to a %s"
 msgstr "Instruktioner för att ladda ner backuper till en %s"
 
-#: ../include/classes.php:1240
-#, php-format
 msgid "Open %s"
 msgstr "Öppna %s"
 
-#: ../include/classes.php:1241
 msgid "Go to % in the menu"
 msgstr "Gå till %s i menyn"
 
-#: ../include/classes.php:1242
 msgid "Click on + and choose a name and enter the URL/Link as above"
 msgstr "Klicka på + och välj ett namn samt fyll i URL enligt ovan"
 
-#: ../include/classes.php:1243
 msgid "Go to settings (Cogwheel left bottom in the window)"
 msgstr "Gå till inställningar (Kugghjul längst ner till vänster i fönstret)"
 
-#: ../include/classes.php:1244
-#, php-format
 msgid "Click on the tab %s under %s"
 msgstr "Klicka på tabben %s under %s"
 
-#: ../include/classes.php:1245
-#: ../include/classes.php:1247
-#, php-format
 msgid "Choose %s as %s"
 msgstr "Välj %s som %s"
 
-#: ../include/classes.php:1246
-#, php-format
 msgid "Click on the tab %s"
 msgstr "Klicka på tabben %s"
 
-#: ../include/classes.php:1254
-#, php-format
 msgid "Open the %s interface"
 msgstr "Öppna %s-gränssnittet"
 
-#: ../include/classes.php:1301
 msgid "Source"
 msgstr "Källa"
 
-#: ../include/classes.php:1318
 msgid "Settings"
 msgstr "Inställningar"
 
-#: ../include/classes.php:1325
 msgid "Domain"
 msgstr "Domän"
 
-#: ../include/classes.php:1339
 msgid "Path"
 msgstr "Sökväg"
 
-#: ../include/classes.php:1344
-#: ../include/classes.php:1363
 msgid "Size"
 msgstr "Storlek"
 
-#: ../include/classes.php:1364
 msgid "Last Updated"
 msgstr "Senast uppdaterad"
 
-#: ../include/classes.php:1472
 msgid "I have saved the backup for you"
 msgstr "Jag har sparat backupen åt dig"
 
-#: ../include/classes.php:1477
 msgid "I could not save the backup for you"
 msgstr "Jag kunde inte spara backupen åt dig"
 
-#~ msgid ""
-#~ "You have to delete the %s file from (%s) the backup folders which you "
-#~ "want to be able to download backups from"
-#~ msgstr ""
-#~ "Du måste radera filen %s from (%s) backup-mappen som du vill ladda ner "
-#~ "backup-filer från"

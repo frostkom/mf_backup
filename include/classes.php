@@ -2,9 +2,13 @@
 
 class mf_backup
 {
+	var $id = 0;
+	var $post_type = 'mf_backup';
+	var $meta_prefix = '';
+
 	function __construct()
 	{
-		$this->post_type = 'mf_backup';
+		//$this->post_type = 'mf_backup';
 		$this->meta_prefix = $this->post_type.'_';
 	}
 
