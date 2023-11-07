@@ -715,7 +715,9 @@ class mf_backup
 							'catch_head' => true,
 						));
 
-						$log_message = sprintf("The response from %s had an error (%s)", remove_protocol(array('url' => $post_domain, 'clean' => true, 'trim' => true)), $url_get_backups);
+						$post_domain_clean = remove_protocol(array('url' => $post_domain, 'clean' => true, 'trim' => true));
+
+						$log_message = sprintf("The response from %s had an error (%s)", $post_domain_clean, $url_get_backups);
 
 						switch($headers['http_code'])
 						{
@@ -770,17 +772,21 @@ class mf_backup
 											{
 												$success = $this->download_file(array('source' => $file_remote_url, 'source_size' => $arr_item['size'], 'target' => $file_local_path));
 
+												$log_message_download = sprintf("The file from %s was NOT downloaded", $post_domain_clean);
+
 												if($success)
 												{
 													$arr_item_temp = $arr_item;
 													$arr_item_temp['parent_id'] = $post_id;
 													$arr_item_temp['path'] = $file_local_path;
 													$this->add_item($arr_item_temp);
+													
+													do_log($log_message_download, 'trash');
 												}
 
 												else
 												{
-													do_log("NOT downloaded ".$file_name." (".$arr_item['size'].") to ".$file_local_path." (".filesize($file_local_path).")");
+													do_log($log_message_download.": ".$file_name." (".$arr_item['size'].") -> ".$file_local_path." (".filesize($file_local_path).")");
 												}
 											}
 										}
