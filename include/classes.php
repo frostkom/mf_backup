@@ -1288,7 +1288,7 @@ class mf_backup
 				'type' => 'string',
 				'global' => true,
 				'icon' => "fas fa-download",
-				'name' => __("Schedule", 'lang_backup'),
+				'name' => __("Backup", 'lang_backup')." - ".__("Schedule", 'lang_backup'),
 			),
 		);*/
 
