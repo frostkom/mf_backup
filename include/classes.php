@@ -717,7 +717,7 @@ class mf_backup
 
 						$post_domain_clean = remove_protocol(array('url' => $post_domain, 'clean' => true, 'trim' => true));
 
-						$log_message = sprintf("The response from %s had an error (%s)", $post_domain_clean, $url_get_backups);
+						$log_message = sprintf("The response from %s had an error", $post_domain_clean);
 
 						switch($headers['http_code'])
 						{
@@ -820,7 +820,7 @@ class mf_backup
 							break;
 
 							default:
-								do_log($log_message." (".$headers['http_code'].")");
+								do_log($log_message." (".$url_get_backups." -> ".$headers['http_code'].")");
 							break;
 						}
 					}
