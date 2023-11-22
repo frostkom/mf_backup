@@ -5,10 +5,10 @@ class mf_backup
 	var $id = 0;
 	var $post_type = 'mf_backup';
 	var $meta_prefix = '';
+	var $arr_files = array();
 
 	function __construct()
 	{
-		//$this->post_type = 'mf_backup';
 		$this->meta_prefix = $this->post_type.'_';
 	}
 
@@ -421,7 +421,10 @@ class mf_backup
 									$time_reset = strtotime(date("Y-m-d H:i:s"));
 								}
 
-								$value = str_replace("\n", "\\n", addslashes($value));
+								if($value != null)
+								{
+									$value = str_replace("\n", "\\n", addslashes($value));
+								}
 
 								$db_info .= ($j > 0 ? "," : "").(isset($value) ? "'".$value."'" : "'NULL'");
 
