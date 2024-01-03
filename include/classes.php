@@ -823,7 +823,7 @@ class mf_backup
 							break;
 
 							default:
-								do_log($log_message." (".$url_get_backups." -> ".$headers['http_code'].")");
+								do_log($log_message." (".$url_get_backups." -> ".var_export($headers, true).")");
 							break;
 						}
 					}
