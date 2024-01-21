@@ -415,7 +415,7 @@ class mf_backup
 							{
 								if((strtotime(date("Y-m-d H:i:s")) - $time_reset) > 300)
 								{
-									sleep(0.1);
+									sleep(1);
 									set_time_limit(600);
 
 									$time_reset = strtotime(date("Y-m-d H:i:s"));
