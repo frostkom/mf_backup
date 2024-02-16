@@ -124,7 +124,10 @@ class mf_backup
 				switch($type)
 				{
 					case 'remove':
-						unlink($backup_htaccess);
+						if(file_exists($backup_htaccess))
+						{
+							unlink($backup_htaccess);
+						}
 					break;
 
 					case 'rename':
@@ -204,7 +207,10 @@ class mf_backup
 
 				for($i = ($setting_backup_limit - 1); $i < $count_temp; $i++)
 				{
-					unlink($arr_files[$i]['file']);
+					if(file_exists($arr_files[$i]['file']))
+					{
+						unlink($arr_files[$i]['file']);
+					}
 				}
 			}
 		}
@@ -216,35 +222,6 @@ class mf_backup
 
 		return substr(md5(microtime()), rand(0, 26), $data['limit']);
 	}
-
-	/*function archive($data)
-	{
-		if(!isset($data['options'])){			$data['options'] = "";}
-		if(!isset($data['remove_source'])){		$data['remove_source'] = false;}
-
-		switch(get_file_suffix($data['target']))
-		{
-			case 'bz2':
-				$data['options'] .= 'j';
-			break;
-
-			case 'gz':
-				$data['options'] .= 'z';
-			break;
-
-			case 'zip':
-				$data['options'] .= 'Z';
-			break;
-		}
-
-		exec("tar -cf".$data['options']." ".$data['target']." ".$data['source'], $output, $return_var);
-
-		if($data['remove_source'] == true && file_exists($data['target']) && is_file($data['source']))
-		{
-			do_log("Remove ".$data['source']);
-			//unlink($data['source']);
-		}
-	}*/
 
 	function copy_directory($src, $dst)
 	{
@@ -461,8 +438,6 @@ class mf_backup
 			}
 		}
 
-		//$this->archive(array('source' => $upload_path.$file, 'target' => $file.".tar.bz2", 'remove_source' => true));
-
 		return $success;
 	}
 
@@ -536,7 +511,10 @@ class mf_backup
 
 					else
 					{
-						unlink($data['target']);
+						if(file_exists($data['target']))
+						{
+							unlink($data['target']);
+						}
 
 						$data['source'] = $headers['redirect_url'];
 						$data['try']++;
@@ -783,7 +761,7 @@ class mf_backup
 													$arr_item_temp['parent_id'] = $post_id;
 													$arr_item_temp['path'] = $file_local_path;
 													$this->add_item($arr_item_temp);
-													
+
 													do_log($log_message_download, 'trash');
 												}
 
@@ -1460,7 +1438,7 @@ class mf_backup
 		{
 			$post_meta = get_post_meta($post_id, $this->meta_prefix.'path', true);
 
-			if($post_meta != '')
+			if($post_meta != '' && file_exists($post_meta))
 			{
 				unlink($post_meta);
 			}
