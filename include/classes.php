@@ -796,7 +796,7 @@ class mf_backup
 
 								else
 								{
-									do_log($log_message." (".$url_get_backups." -> ".var_export($json, true).")");
+									do_log($log_message." (".$url_get_backups." -> ".var_export($content, true).")"); //, ".var_export($headers, true)."
 								}
 							break;
 
