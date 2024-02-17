@@ -854,12 +854,16 @@ class mf_backup
 
 			$arr_settings = array(
 				'setting_backup_schedule' => __("Schedule", 'lang_backup'),
-				'setting_backup_limit' => __("Number of backups to keep", 'lang_backup'),
 			);
 
-			if(is_multisite() && get_site_option('setting_backup_db_tables') == '' && is_plugin_active("mf_site_manager/index.php"))
+			if(get_site_option('setting_backup_schedule') != '')
 			{
-				$arr_settings['setting_backup_sites'] = __("Sites", 'lang_backup');
+				$arr_settings['setting_backup_limit'] = __("Number of backups to keep", 'lang_backup');
+
+				if(is_multisite() && get_site_option('setting_backup_db_tables') == '' && is_plugin_active("mf_site_manager/index.php"))
+				{
+					$arr_settings['setting_backup_sites'] = __("Sites", 'lang_backup');
+				}
 			}
 
 			$arr_settings['setting_backup_perform'] = __("Perform Backup", 'lang_backup');
@@ -876,19 +880,6 @@ class mf_backup
 			}
 
 			show_settings_fields(array('area' => $options_area, 'object' => $this, 'settings' => $arr_settings));
-			############################
-
-			// FTP
-			############################
-			/*$options_area = $options_area_orig."_ftp";
-
-			add_settings_section($options_area, "", array($this, $options_area."_callback"), BASE_OPTIONS_PAGE);
-
-			$arr_settings = array(
-				'setting_backup_limit' => ,
-			);
-
-			show_settings_fields(array('area' => $options_area, 'object' => $this, 'settings' => $arr_settings));*/
 			############################
 
 			// Database
@@ -1057,7 +1048,7 @@ class mf_backup
 		settings_save_site_wide($setting_key);
 		$option = get_site_option($setting_key, get_option($setting_key));
 
-		echo show_password_field(array('name' => $setting_key, 'value' => $option, 'xtra' => " autocomplete='new-password'", 'suffix' => __("Create a custom key here, the more advanced the better to protect the feed and thus the backup files", 'lang_backup')));
+		echo show_password_field(array('name' => $setting_key, 'value' => $option, 'xtra' => " autocomplete='new-password'", 'suffix' => __("Create a custom key here", 'lang_backup')));
 	}
 
 	function setting_backup_rss_allowed_ips_callback()
