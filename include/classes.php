@@ -796,7 +796,7 @@ class mf_backup
 
 								else
 								{
-									do_log($log_message." (".$url_get_backups." -> ".var_export($content, true).")"); //, ".var_export($headers, true)."
+									do_log($log_message." (".$url_get_backups." -> No success found in content -> JSON: ".var_export($json, true)." -> Server: ".$headers['server'].")"); //, ".var_export($headers, true)."
 								}
 							break;
 
