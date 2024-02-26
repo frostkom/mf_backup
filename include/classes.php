@@ -267,7 +267,7 @@ class mf_backup
 		{
 			if(is_dir($data['folder']))
 			{
-				list($upload_path, $upload_url) = get_uploads_folder('mf_backup');
+				list($upload_path, $upload_url) = get_uploads_folder($this->post_type);
 
 				//Check if there are more folders present in backup folder than 'setting_backup_limit'
 				//$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
@@ -335,7 +335,7 @@ class mf_backup
 
 		$file_suffix = "sql".($data['compress'] != '' ? ".".$data['compress'] : "");
 
-		list($upload_path, $upload_url) = get_uploads_folder('mf_backup');
+		list($upload_path, $upload_url) = get_uploads_folder($this->post_type);
 
 		$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
 
@@ -594,7 +594,7 @@ class mf_backup
 
 		if($obj_cron->is_running == false)
 		{
-			/* Save new backup */
+			// Save new backup
 			##########################
 			$setting_backup_schedule = get_site_option('setting_backup_schedule');
 
@@ -616,15 +616,13 @@ class mf_backup
 			}
 			##########################
 
-			/* Download backups from external sites */
+			// Download backups from external sites
 			####################
-			//set_time_limit(0);
-
 			$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_type = %s AND post_status = %s", $this->post_type, 'publish'));
 
 			if($wpdb->num_rows > 0)
 			{
-				list($upload_path_base, $upload_url_base) = get_uploads_folder("mf_backup/sites");
+				list($upload_path_base, $upload_url_base) = get_uploads_folder($this->post_type."/sites");
 
 				if(!file_exists($upload_path_base.".htaccess"))
 				{
@@ -707,7 +705,7 @@ class mf_backup
 
 								if(isset($json['success']) && $json['success'] == true)
 								{
-									list($upload_path, $upload_url) = get_uploads_folder("mf_backup/sites/".remove_protocol(array('url' => $post_domain, 'clean' => true)));
+									list($upload_path, $upload_url) = get_uploads_folder($this->post_type."/sites/".remove_protocol(array('url' => $post_domain, 'clean' => true)));
 
 									$post_limit_amount = count($json['data']);
 
@@ -808,6 +806,14 @@ class mf_backup
 				}
 			}
 			####################
+
+			// Delete old uploads
+			#######################
+			list($upload_path, $upload_url) = get_uploads_folder($this->post_type);
+
+			get_file_info(array('path' => $upload_path, 'callback' => 'delete_files_callback', 'time_limit' => YEAR_IN_SECONDS));
+			get_file_info(array('path' => $upload_path, 'folder_callback' => 'delete_empty_folder_callback'));
+			#######################
 		}
 
 		$obj_cron->end();
