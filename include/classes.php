@@ -345,96 +345,99 @@ class mf_backup
 
 		foreach($data['db_tables'] as $table => $name)
 		{
-			if(in_array($data['db_type'], array('all', 'struct')))
+			if(does_table_exist($table))
 			{
-				$rows2 = $wpdb->get_results("SHOW CREATE TABLE ".$table, ARRAY_N);
-
-				if($wpdb->num_rows > 0)
+				if(in_array($data['db_type'], array('all', 'struct')))
 				{
-					$db_struct .= $db_info .= "\n\n# Structure: ".$table."\n\n"
-						.$rows2[0][1].";\n\n";
-				}
-			}
+					$rows2 = $wpdb->get_results("SHOW CREATE TABLE ".$table, ARRAY_N);
 
-			if(in_array($data['db_type'], array('all', 'data')))
-			{
-				$row_limit = 100;
-				$row_amount = $wpdb->get_var("SELECT COUNT(1) FROM ".$table);
-
-				for($row_start = 0; $row_start < $row_amount; $row_start += $row_limit)
-				{
-					$result = $wpdb->get_results("SELECT * FROM ".$table." LIMIT ".$row_start.", ".$row_limit, ARRAY_N);
-					$rows = $wpdb->num_rows;
-
-					if($rows > 0)
+					if($wpdb->num_rows > 0)
 					{
-						if($row_start == 0)
+						$db_struct .= $db_info .= "\n\n# Structure: ".$table."\n\n"
+							.$rows2[0][1].";\n\n";
+					}
+				}
+
+				if(in_array($data['db_type'], array('all', 'data')))
+				{
+					$row_limit = 100;
+					$row_amount = $wpdb->get_var("SELECT COUNT(1) FROM ".$table);
+
+					for($row_start = 0; $row_start < $row_amount; $row_start += $row_limit)
+					{
+						$result = $wpdb->get_results("SELECT * FROM ".$table." LIMIT ".$row_start.", ".$row_limit, ARRAY_N);
+						$rows = $wpdb->num_rows;
+
+						if($rows > 0)
 						{
-							$db_info .= "# Data: ".$table."\n";
-						}
-
-						$i = 0;
-
-						foreach($result as $r)
-						{
-							$db_info .= "\n";
-
-							if($i % 5000 == 0)
+							if($row_start == 0)
 							{
-								$db_info .= "INSERT IGNORE INTO `".$table."` VALUES";
+								$db_info .= "# Data: ".$table."\n";
 							}
 
-							$db_info .= "(";
+							$i = 0;
 
-							$j = 0;
-
-							foreach($r as $key => $value)
+							foreach($result as $r)
 							{
-								if((strtotime(date("Y-m-d H:i:s")) - $time_reset) > 300)
-								{
-									sleep(1);
-									set_time_limit(600);
+								$db_info .= "\n";
 
-									$time_reset = strtotime(date("Y-m-d H:i:s"));
+								if($i % 5000 == 0)
+								{
+									$db_info .= "INSERT IGNORE INTO `".$table."` VALUES";
 								}
 
-								if($value != null)
+								$db_info .= "(";
+
+								$j = 0;
+
+								foreach($r as $key => $value)
 								{
-									$value = str_replace("\n", "\\n", addslashes($value));
+									if((strtotime(date("Y-m-d H:i:s")) - $time_reset) > 300)
+									{
+										sleep(1);
+										set_time_limit(600);
+
+										$time_reset = strtotime(date("Y-m-d H:i:s"));
+									}
+
+									if($value != null)
+									{
+										$value = str_replace("\n", "\\n", addslashes($value));
+									}
+
+									$db_info .= ($j > 0 ? "," : "").(isset($value) ? "'".$value."'" : "'NULL'");
+
+									$j++;
 								}
 
-								$db_info .= ($j > 0 ? "," : "").(isset($value) ? "'".$value."'" : "'NULL'");
+								$db_info .= ")";
 
-								$j++;
-							}
+								$i++;
 
-							$db_info .= ")";
+								if($i % 5000 == 0 || $i == $rows)
+								{
+									$db_info .= ";";
 
-							$i++;
+									$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'a', 'content' => $db_info));
 
-							if($i % 5000 == 0 || $i == $rows)
-							{
-								$db_info .= ";";
+									$db_info = "";
+								}
 
-								$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'a', 'content' => $db_info));
-
-								$db_info = "";
-							}
-
-							else
-							{
-								$db_info .= ",";
+								else
+								{
+									$db_info .= ",";
+								}
 							}
 						}
 					}
 				}
-			}
 
-			if($db_info != '')
-			{
-				$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'a', 'content' => $db_info));
+				if($db_info != '')
+				{
+					$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'a', 'content' => $db_info));
 
-				$db_info = "";
+					$db_info = "";
+				}
 			}
 		}
 
@@ -755,6 +758,34 @@ class mf_backup
 
 												if($success)
 												{
+													$post_id_last = $wpdb->get_var($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_type = %s AND post_parent = '%d' AND post_status != %s AND meta_key = %s ORDER BY meta_value DESC LIMIT 0, 1", $this->post_type, $post_id, 'trash', $this->meta_prefix.'time'));
+
+													if($post_id_last > 0)
+													{
+														$post_size_previous = get_post_meta($post_id_last, $this->meta_prefix.'size', true);
+
+														if($post_size_previous > 0)
+														{
+															$size_diff = ($arr_item['size'] - $post_size_previous);
+															$size_diff_percent = (($size_diff / $post_size_previous) * 100);
+
+															/*if($size_diff_percent < -5)
+															{*/
+																do_log(sprintf("The file from %s was %s larger compared to the previous file", $post_domain_clean, mf_format_number($size_diff_percent, 0)."%")." (#Parent:".$post_id." -> #Last:".$post_id_last." -> ".show_final_size($post_size_previous)." -> ".show_final_size($arr_item['size']).")");
+															//}
+														}
+
+														else
+														{
+															do_log("The previous file had no size (".$wpdb->last_query." -> ".$post_id_last.")");
+														}
+													}
+
+													else
+													{
+														do_log("I did not get an ID back (".$wpdb->last_query.")");
+													}
+
 													$arr_item_temp = $arr_item;
 													$arr_item_temp['parent_id'] = $post_id;
 													$arr_item_temp['path'] = $file_local_path;
@@ -770,6 +801,8 @@ class mf_backup
 											}
 										}
 									}
+
+									$post_limit_amount *= 2;
 
 									update_post_meta($post_id, $this->meta_prefix.'limit_amount', $post_limit_amount);
 									update_post_meta($post_id, $this->meta_prefix.'last_fetched', date("Y-m-d H:i:s"));
@@ -1259,6 +1292,15 @@ class mf_backup
 		}
 	}
 
+	function admin_menu()
+	{
+		$menu_start = "edit.php?post_type=".$this->post_type;
+		$menu_capability = override_capability(array('page' => $menu_start, 'default' => 'edit_posts'));
+
+		$menu_title = __("Settings", 'lang_address');
+		add_submenu_page($menu_start, $menu_title, $menu_title, $menu_capability, admin_url("options-general.php?page=settings_mf_base#settings_backup"));
+	}
+
 	function filter_sites_table_settings($arr_settings)
 	{
 		/*$arr_settings['settings_backup'] = array(
@@ -1286,6 +1328,7 @@ class mf_backup
 
 			if($post_domain != '' && $post_api_key != '')
 			{
+				$actions['login'] = "<a href='".$post_domain."/wp-admin/'>".__("Log In", 'lang_backup')."</a>";
 				$actions['source'] = "<a href='".$post_domain."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$post_api_key."'>".__("Source", 'lang_backup')."</a>";
 			}
 
