@@ -315,9 +315,9 @@ class mf_backup
 			$table_type = $data['db_type'];
 		}
 
-		else if(substr($data['db_tables'], 0, 3) == $wpdb->base_prefix)
+		/*else if(is_array($data['db_tables']) && isset($data['db_tables'][0]) && substr($data['db_tables'][0], 0, 3) == $wpdb->base_prefix)
 		{
-			@list($prefix, $id) = explode("_", $data['db_tables']);
+			@list($prefix, $id) = explode("_", $data['db_tables'][0]);
 
 			if(!(intval($id) > 0))
 			{
@@ -326,7 +326,7 @@ class mf_backup
 
 			$data['db_tables'] = $this->get_tables_for_select(array('search' => $data['db_tables']));
 			$table_type = $id;
-		}
+		}*/
 
 		else
 		{
