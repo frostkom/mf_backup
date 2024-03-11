@@ -613,7 +613,7 @@ class mf_backup
 
 					if($this->do_backup() == false)
 					{
-						do_log("I could not save the backup for you");
+						do_log(__("I could not save the backup for you", 'lang_backup'));
 					}
 				}
 			}
@@ -769,10 +769,10 @@ class mf_backup
 															$size_diff = ($arr_item['size'] - $post_size_previous);
 															$size_diff_percent = (($size_diff / $post_size_previous) * 100);
 
-															/*if($size_diff_percent < -5)
-															{*/
+															if($size_diff_percent > 5 || $size_diff_percent < -5)
+															{
 																do_log(sprintf("The file from %s was %s larger compared to the previous file", $post_domain_clean, mf_format_number($size_diff_percent, 0)."%")." (#Parent:".$post_id." -> #Last:".$post_id_last." -> ".show_final_size($post_size_previous)." -> ".show_final_size($arr_item['size']).")");
-															//}
+															}
 														}
 
 														else
