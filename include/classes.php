@@ -263,33 +263,30 @@ class mf_backup
 		if(!isset($data['folder'])){			$data['folder'] = '';}
 		if(!isset($data['random_chars'])){		$data['random_chars'] = $this->random_chars();}
 
-		if($data['folder'] != '')
+		if($data['folder'] != '' && is_dir($data['folder']))
 		{
-			if(is_dir($data['folder']))
+			list($upload_path, $upload_url) = get_uploads_folder($this->post_type);
+
+			//Check if there are more folders present in backup folder than 'setting_backup_limit'
+			//$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
+
+			$folder_name = basename($data['folder']);
+
+			if($folder_name == 'uploads')
 			{
-				list($upload_path, $upload_url) = get_uploads_folder($this->post_type);
-
-				//Check if there are more folders present in backup folder than 'setting_backup_limit'
-				//$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
-
-				$folder_name = basename($data['folder']);
-
-				if($folder_name == 'uploads')
-				{
-					$folder_name = 1;
-				}
-
-				$destination_folder = $upload_path.date("Y-m-d_Hi")."_ftp_".$folder_name."_".$data['random_chars']."/";
-
-				$this->copy_directory($data['folder'], $destination_folder);
-
-				$success = true;
+				$folder_name = 1;
 			}
 
-			/*else
-			{
-				do_log($data['folder']." is not a folder");
-			}*/
+			$destination_folder = $upload_path.date("Y-m-d_Hi")."_ftp_".$folder_name."_".$data['random_chars']."/";
+
+			$this->copy_directory($data['folder'], $destination_folder);
+
+			$success = true;
+		}
+
+		else
+		{
+			do_log(__("I could not save the backup for you", 'lang_backup')." (".__FUNCTION__.", ".$data['folder'].")");
 		}
 
 		return $success;
@@ -315,7 +312,7 @@ class mf_backup
 			$table_type = $data['db_type'];
 		}
 
-		/*else if(is_array($data['db_tables']) && isset($data['db_tables'][0]) && substr($data['db_tables'][0], 0, 3) == $wpdb->base_prefix)
+		else if(is_array($data['db_tables']) && isset($data['db_tables'][0]) && substr($data['db_tables'][0], 0, 3) == $wpdb->base_prefix)
 		{
 			@list($prefix, $id) = explode("_", $data['db_tables'][0]);
 
@@ -326,7 +323,7 @@ class mf_backup
 
 			$data['db_tables'] = $this->get_tables_for_select(array('search' => $data['db_tables']));
 			$table_type = $id;
-		}*/
+		}
 
 		else
 		{
@@ -420,6 +417,11 @@ class mf_backup
 
 									$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'a', 'content' => $db_info));
 
+									if($success == false)
+									{
+										do_log(__("I could not save the backup for you", 'lang_backup')." (".__FUNCTION__.", ".$upload_path.$file.")");
+									}
+
 									$db_info = "";
 								}
 
@@ -435,6 +437,11 @@ class mf_backup
 				if($db_info != '')
 				{
 					$success = set_file_content(array('file' => $upload_path.$file, 'mode' => 'a', 'content' => $db_info));
+
+					if($success == false)
+					{
+						do_log(__("I could not save the backup for you", 'lang_backup')." (".__FUNCTION__.", ".$upload_path.$file.")");
+					}
 
 					$db_info = "";
 				}
@@ -611,10 +618,7 @@ class mf_backup
 				{
 					update_option('option_backup_saved', date("Y-m-d H:i:s"), 'no');
 
-					if($this->do_backup() == false)
-					{
-						do_log(__("I could not save the backup for you", 'lang_backup'));
-					}
+					$this->do_backup();
 				}
 			}
 			##########################
