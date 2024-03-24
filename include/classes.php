@@ -762,7 +762,7 @@ class mf_backup
 
 												if($success)
 												{
-													$post_id_last = $wpdb->get_var($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_type = %s AND post_parent = '%d' AND post_status != %s AND meta_key = %s ORDER BY meta_value DESC LIMIT 0, 1", $this->post_type, $post_id, 'trash', $this->meta_prefix.'time'));
+													$post_id_last = $wpdb->get_var($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_type = %s AND post_parent = '%d' AND post_status != %s AND post_title != %s AND meta_key = %s ORDER BY meta_value DESC LIMIT 0, 1", $this->post_type, $post_id, 'trash', $arr_item['name'], $this->meta_prefix.'time'));
 
 													if($post_id_last > 0)
 													{
