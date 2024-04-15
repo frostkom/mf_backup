@@ -785,10 +785,10 @@ class mf_backup
 														}
 													}
 
-													else
+													/*else
 													{
 														do_log("I did not get an ID back (".$wpdb->last_query.")");
-													}
+													}*/
 
 													$arr_item_temp = $arr_item;
 													$arr_item_temp['parent_id'] = $post_id;
