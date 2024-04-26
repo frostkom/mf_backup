@@ -4,7 +4,7 @@ class mf_backup
 {
 	var $id = 0;
 	var $post_type = 'mf_backup';
-	var $meta_prefix = '';
+	var $meta_prefix;
 	var $arr_files = array();
 
 	function __construct()
@@ -1317,6 +1317,16 @@ class mf_backup
 		);*/
 
 		return $arr_settings;
+	}
+
+	function filter_sites_table_pages($arr_pages)
+	{
+		$arr_pages[$this->post_type] = array(
+			'icon' => "fas fa-history",
+			'title' => __("Backups", 'lang_backup'),
+		);
+
+		return $arr_pages;
 	}
 
 	function row_actions($actions, $post)
