@@ -800,7 +800,7 @@ class mf_backup
 
 												else
 												{
-													do_log($log_message_download.": ".$file_name." (".$arr_item['size'].") -> ".$file_local_path." (".filesize($file_local_path).")");
+													do_log($log_message_download.": ".$file_name." (".show_final_size($arr_item['size']).") -> ".$file_local_path." (".show_final_size(filesize($file_local_path)).")");
 												}
 											}
 										}
