@@ -730,6 +730,8 @@ class mf_backup
 
 										else
 										{
+											$log_message_download = sprintf("The file from %s was NOT downloaded (%s)", $post_domain_clean, $file_name);
+
 											if(file_exists($file_local_path) && filesize($file_local_path) > 0)
 											{
 												if(isset($arr_item['size']) && $arr_item['size'] != filesize($file_local_path))
@@ -743,6 +745,8 @@ class mf_backup
 													$arr_item_temp['parent_id'] = $post_id;
 													$arr_item_temp['path'] = $file_local_path;
 													$this->add_item($arr_item_temp);
+
+													do_log($log_message_download, 'trash');
 												}
 											}
 
@@ -752,13 +756,13 @@ class mf_backup
 												$arr_item_temp['parent_id'] = $post_id;
 												$arr_item_temp['path'] = $file_local_path;
 												$this->add_item($arr_item_temp);
+
+												do_log($log_message_download, 'trash');
 											}
 
 											else
 											{
 												$success = $this->download_file(array('source' => $file_remote_url, 'source_size' => $arr_item['size'], 'target' => $file_local_path));
-
-												$log_message_download = sprintf("The file from %s was NOT downloaded", $post_domain_clean);
 
 												if($success)
 												{
