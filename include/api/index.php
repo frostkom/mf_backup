@@ -13,7 +13,9 @@ require_once("../classes.php");
 
 $obj_backup = new mf_backup();
 
-$json_output = array();
+$json_output = array(
+	'success' => false,
+);
 
 $type = check_var('type', 'char');
 
@@ -30,8 +32,15 @@ if($obj_backup->authorize_api())
 
 		case 'end_backup':
 			$obj_backup->change_backup_htaccess('restore');
+
+			$json_output['success'] = true;
 		break;
 	}
+}
+
+else
+{
+	$json_output['message'] = __("You are not authorized for this action", 'lang_backup');
 }
 
 echo json_encode($json_output);

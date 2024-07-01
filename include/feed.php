@@ -13,8 +13,6 @@ $obj_backup = new mf_backup();
 
 if($obj_backup->authorize_api())
 {
-	//$obj_backup->change_backup_htaccess('remove');
-
 	header('Content-Type: '.feed_content_type('rss-http').'; charset='.get_option('blog_charset'), true);
 
 	echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>';
@@ -47,4 +45,9 @@ if($obj_backup->authorize_api())
 
 		echo "</channel>
 	</rss>";
+}
+
+else
+{
+	echo __("You are not authorized for this action", 'lang_backup');
 }
