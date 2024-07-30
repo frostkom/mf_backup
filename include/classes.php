@@ -810,9 +810,15 @@ class mf_backup
 										}
 									}
 
-									$post_limit_amount *= 2;
+									//$post_limit_amount *= 2;
+									$post_limit_amount = get_post_meta($post_id, $this->meta_prefix.'limit_amount', true);
 
-									update_post_meta($post_id, $this->meta_prefix.'limit_amount', $post_limit_amount);
+									if(!($post_limit_amount > 0))
+									{
+										$post_limit_amount = 2;
+									}
+
+									//update_post_meta($post_id, $this->meta_prefix.'limit_amount', $post_limit_amount);
 									update_post_meta($post_id, $this->meta_prefix.'last_fetched', date("Y-m-d H:i:s"));
 
 									if($this->get_amount(array('id' => $post_id)) > $post_limit_amount)
@@ -1385,6 +1391,15 @@ class mf_backup
 					'name' => __("API Key", 'lang_backup'),
 					'id' => $this->meta_prefix.'api_key',
 					'type' => 'text', // Can't be password here because it will be saved wrongly
+				),
+				array(
+					'name' => __("Amount", 'lang_backup'),
+					'id' => $this->meta_prefix.'limit_amount',
+					'type' => 'number',
+					'attributes' => array(
+						'min' => 2,
+						'max' => 20,
+					),
 				),
 				// Children
 				array(
