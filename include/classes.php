@@ -730,7 +730,7 @@ class mf_backup
 
 										else
 										{
-											$log_message_download = sprintf("The file from %s was NOT downloaded (%s)", $post_domain_clean, $file_name);
+											$log_message_download = sprintf("The file from %s was NOT downloaded", $post_domain_clean);
 
 											if(file_exists($file_local_path) && filesize($file_local_path) > 0)
 											{
