@@ -3,7 +3,7 @@
 Plugin Name: MF Backup
 Plugin URI: https://github.com/frostkom/mf_backup
 Description:
-Version: 2.3.34
+Version: 2.3.35
 Licence: GPLv2 or later
 Author: Martin Fors
 Author URI: https://martinfors.se
@@ -45,8 +45,6 @@ if(!function_exists('is_plugin_active') || function_exists('is_plugin_active') &
 		add_action('manage_'.$obj_backup->post_type.'_posts_custom_column', array($obj_backup, 'column_cell'), 5, 2);
 
 		add_filter('filter_last_updated_post_types', array($obj_backup, 'filter_last_updated_post_types'), 10, 2);
-
-		load_plugin_textdomain('lang_backup', false, dirname(plugin_basename(__FILE__))."/lang/");
 	}
 
 	add_action('wp_ajax_perform_backup', array($obj_backup, 'perform_backup'));

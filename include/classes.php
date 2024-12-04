@@ -80,11 +80,14 @@ class mf_backup
 
 		$option = (is_multisite() ? get_site_option('backwpup_jobs') : get_option('backwpup_jobs'));
 
-		foreach($option as $key => $value)
+		if(is_array($option))
 		{
-			if(isset($value['backupdir']) && $value['backupdir'] != $out)
+			foreach($option as $key => $value)
 			{
-				$out .= ($out != '' ? ", " : "").$value['backupdir'];
+				if(isset($value['backupdir']) && $value['backupdir'] != $out)
+				{
+					$out .= ($out != '' ? ", " : "").$value['backupdir'];
+				}
 			}
 		}
 
@@ -868,6 +871,8 @@ class mf_backup
 
 	function init()
 	{
+		load_plugin_textdomain('lang_backup', false, str_replace("/include", "", dirname(plugin_basename(__FILE__)))."/lang/");
+
 		if(get_site_option('setting_rss_api_key') == '')
 		{
 			$labels = array(
