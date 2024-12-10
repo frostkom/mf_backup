@@ -495,16 +495,15 @@ class mf_backup
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL, $data['source']);
 
-		# set return transfer to false
+		// Set return transfer to false
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
 		curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 
-		# increase timeout to download big file
+		// Increase timeout to download big file
 		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
 		curl_setopt($ch, CURLOPT_FILE, $fp);
 
-		# execute curl
 		curl_exec($ch);
 
 		$headers = curl_getinfo($ch);
@@ -585,7 +584,7 @@ class mf_backup
 					$i++;
 				}
 
-				else
+				else if(get_post_status($post_id) != 'trash')
 				{
 					wp_trash_post($post_id);
 				}
@@ -782,7 +781,7 @@ class mf_backup
 
 															if($size_diff_percent > 5 || $size_diff_percent < -5)
 															{
-																do_log(sprintf("The file from %s was %s larger compared to the previous file", $post_domain_clean, mf_format_number($size_diff_percent, 0)."%")." (#Parent:".$post_id.", #Last:".$post_id_last.", ".get_post_title($post_id_last)." ".show_final_size($post_size_previous)." -> ".$arr_item['name']." ".show_final_size($arr_item['size']).")");
+																do_log(sprintf("The file from %s was %s larger compared to the previous file", $post_domain_clean, mf_format_number($size_diff_percent, 0)."%")." (#Parent:".$post_id.", #Last:".$post_id_last.", ".get_post_title($post_id_last)." ".show_final_size($post_size_previous)." -> ".$arr_item['name']." ".show_final_size($arr_item['size']).")", 'publish', false);
 															}
 														}
 
@@ -807,13 +806,14 @@ class mf_backup
 
 												else
 												{
-													do_log($log_message_download.": ".$file_name." (".show_final_size($arr_item['size']).") -> ".$file_local_path." (".show_final_size(filesize($file_local_path)).")");
+													do_log($log_message_download.": ".$file_name." (".show_final_size($arr_item['size'])." -> ".show_final_size(filesize($file_local_path)).")"); //$file_local_path
+
+													unlink($file_local_path);
 												}
 											}
 										}
 									}
 
-									//$post_limit_amount *= 2;
 									$post_limit_amount = get_post_meta($post_id, $this->meta_prefix.'limit_amount', true);
 
 									if(!($post_limit_amount > 0))
@@ -821,7 +821,6 @@ class mf_backup
 										$post_limit_amount = 2;
 									}
 
-									//update_post_meta($post_id, $this->meta_prefix.'limit_amount', $post_limit_amount);
 									update_post_meta($post_id, $this->meta_prefix.'last_fetched', date("Y-m-d H:i:s"));
 
 									if($this->get_amount(array('id' => $post_id)) > $post_limit_amount)
@@ -1278,7 +1277,7 @@ class mf_backup
 
 			echo "<ol>
 				<li>".sprintf(__("Open %s", 'lang_backup'), "Download Station")."</li>
-				<li>".sprintf(__("Go to % in the menu", 'lang_backup'), "RSS Feeds")."</li>
+				<li>".sprintf(__("Go to %s in the menu", 'lang_backup'), "RSS Feeds")."</li>
 				<li>".__("Click on + and choose a name and enter the URL/Link as above", 'lang_backup')."</li>
 				<li>".__("Go to settings (Cogwheel left bottom in the window)", 'lang_backup')."</li>
 				<li>".sprintf(__("Click on the tab %s under %s", 'lang_backup'), "General", "BT/etc.")."</li>
@@ -1455,7 +1454,7 @@ class mf_backup
 		return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d' AND post_status != %s", $this->post_type, $this->id, 'trash')); // AND post_status = %s //, $data['post_status']
 	}
 
-	function column_cell($col, $id)
+	function column_cell($col, $post_id)
 	{
 		global $wpdb, $post;
 
@@ -1465,29 +1464,44 @@ class mf_backup
 				switch($col)
 				{
 					case 'size':
-						$post_meta = get_post_meta($id, $this->meta_prefix.'size', true);
+						$post_meta_size = get_post_meta($post_id, $this->meta_prefix.'size', true);
 
 						// Children
-						if($post_meta > 0)
+						if($post_meta_size > 0)
 						{
-							echo show_final_size($post_meta);
+							$post_meta_path = get_post_meta($post_id, $this->meta_prefix.'path', true);
+							$post_meta_path_size = (file_exists($post_meta_path) ? filesize($post_meta_path) : 0);
+
+							if((int)$post_meta_path_size != (int)$post_meta_size)
+							{
+								echo "<i class='fa fa-times red fa-lg'></i> ".show_final_size($post_meta_path_size)." != ".show_final_size($post_meta_size);
+							}
+
+							else
+							{
+								echo "<i class='fa fa-check green fa-lg'></i> ".show_final_size($post_meta_size);
+							}
 						}
 
 						// Parents
 						else
 						{
-							$post_amount = $this->get_amount(array('id' => $id));
-							$post_limit_amount = get_post_meta($id, $this->meta_prefix.'limit_amount', true);
+							$post_amount = $this->get_amount(array('id' => $post_id));
+							$post_limit_amount = get_post_meta($post_id, $this->meta_prefix.'limit_amount', true);
 
 							if($post_amount > 0 || $post_limit_amount > 0)
 							{
-								echo $post_amount." / ".$post_limit_amount;
+								$post_domain = get_post_meta($post_id, $this->meta_prefix.'domain', true);
+
+								list($upload_path, $upload_url) = get_uploads_folder($this->post_type."/sites/".remove_protocol(array('url' => $post_domain, 'clean' => true)));
+
+								echo "<span title='".$upload_path."'>".$post_amount." / ".$post_limit_amount."</span>";
 							}
 						}
 					break;
 
 					case 'last_fetched':
-						$post_meta = get_post_meta($id, $this->meta_prefix.'last_fetched', true);
+						$post_meta = get_post_meta($post_id, $this->meta_prefix.'last_fetched', true);
 
 						// Parents
 						if($post_meta > DEFAULT_DATE)
@@ -1498,7 +1512,7 @@ class mf_backup
 						// Children
 						else
 						{
-							$post_meta = get_post_meta($id, $this->meta_prefix.'time', true);
+							$post_meta = get_post_meta($post_id, $this->meta_prefix.'time', true);
 
 							if($post_meta > DEFAULT_DATE)
 							{
