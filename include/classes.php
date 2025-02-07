@@ -781,7 +781,7 @@ class mf_backup
 
 															if($size_diff_percent > 5 || $size_diff_percent < -5)
 															{
-																do_log(sprintf("The file from %s was %s larger compared to the previous file", $post_domain_clean, mf_format_number($size_diff_percent, 0)."%")." (#Parent:".$post_id.", #Last:".$post_id_last.", ".get_post_title($post_id_last)." ".show_final_size($post_size_previous)." -> ".$arr_item['name']." ".show_final_size($arr_item['size']).")", 'publish', false);
+																do_log(sprintf("The file from %s was %s larger compared to the previous file", $post_domain_clean, mf_format_number($size_diff_percent, 0)."%")." (#Parent:".$post_id.", #Last:".$post_id_last.", ".get_the_title($post_id_last)." ".show_final_size($post_size_previous)." -> ".$arr_item['name']." ".show_final_size($arr_item['size']).")", 'publish', false);
 															}
 														}
 
