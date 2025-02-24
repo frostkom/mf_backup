@@ -618,7 +618,7 @@ class mf_backup
 
 				if($option_backup_saved == '' || $schedule_cutoff < date("Y-m-d H:i:s"))
 				{
-					update_option('option_backup_saved', date("Y-m-d H:i:s"), 'no');
+					update_option('option_backup_saved', date("Y-m-d H:i:s"), false);
 
 					$this->do_backup();
 				}
