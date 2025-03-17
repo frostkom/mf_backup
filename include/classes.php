@@ -874,14 +874,14 @@ class mf_backup
 
 		if(get_site_option('setting_rss_api_key') == '')
 		{
-			$labels = array(
-				'name' => _x(__("Backup", 'lang_backup'), 'post type general name'),
-				'singular_name' => _x(__("Backup", 'lang_backup'), 'post type singular name'),
-				'menu_name' => __("Backup", 'lang_backup'),
-			);
-
-			$args = array(
-				'labels' => $labels,
+			// Post types
+			#######################
+			register_post_type($this->post_type, array(
+				'labels' => array(
+					'name' => _x(__("Backup", 'lang_backup'), 'post type general name'),
+					'singular_name' => _x(__("Backup", 'lang_backup'), 'post type singular name'),
+					'menu_name' => __("Backup", 'lang_backup'),
+				),
 				'public' => false,
 				'show_ui' => true,
 				'show_in_menu' => true,
@@ -893,9 +893,8 @@ class mf_backup
 				'supports' => array('title'),
 				'hierarchical' => true,
 				'has_archive' => false,
-			);
-
-			register_post_type($this->post_type, $args);
+			));
+			#######################
 		}
 	}
 
