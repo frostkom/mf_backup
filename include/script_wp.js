@@ -14,8 +14,6 @@ jQuery(function($)
 			},
 			success: function(data)
 			{
-				obj.selector.empty();
-
 				if(obj.button.is("a"))
 				{
 					obj.button.addClass('hide');
@@ -26,15 +24,7 @@ jQuery(function($)
 					obj.button.addClass('is_disabled');
 				}
 
-				if(data.success)
-				{
-					obj.selector.html(data.message);
-				}
-
-				else
-				{
-					obj.selector.html(data.error);
-				}
+				obj.selector.html(data.html);
 			}
 		});
 
@@ -46,8 +36,8 @@ jQuery(function($)
 		run_ajax(
 		{
 			'button': $(e.currentTarget),
-			'action': 'perform_backup',
-			'selector': $("#backup_debug")
+			'action': 'api_backup_perform',
+			'selector': $(".api_backup_perform")
 		});
 	});
 });

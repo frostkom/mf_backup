@@ -1095,7 +1095,7 @@ class mf_backup
 		echo "<div>"
 			.show_button(array('type' => 'button', 'name' => 'btnBackupPerform', 'text' => __("Run", 'lang_backup'), 'class' => 'button-secondary'))
 		."</div>
-		<div id='backup_debug'></div>";
+		<div class='api_backup_perform'></div>";
 	}
 
 	function setting_rss_api_key_callback()
@@ -1545,15 +1545,18 @@ class mf_backup
 		return $array;
 	}
 
-	function perform_backup()
+	function api_backup_perform()
 	{
 		global $done_text, $error_text;
 
-		$result = array();
+		$json_output = array(
+			'success' => false,
+		);
 
 		if($this->do_backup() == true)
 		{
 			$done_text = __("I have saved the backup for you", 'lang_backup');
+			$json_output['success'] = true;
 		}
 
 		else
@@ -1561,21 +1564,10 @@ class mf_backup
 			$error_text = __("I could not save the backup for you", 'lang_backup');
 		}
 
-		$out = get_notification();
-
-		if($done_text != '')
-		{
-			$result['success'] = true;
-			$result['message'] = $out;
-		}
-
-		else
-		{
-			$result['error'] = $out;
-		}
+		$json_output['html'] = get_notification();
 
 		header('Content-Type: application/json');
-		echo json_encode($result);
+		echo json_encode($json_output);
 		die();
 	}
 }
