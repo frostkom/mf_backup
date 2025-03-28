@@ -558,11 +558,11 @@ class mf_backup
 			'post_parent' => $arr_item['parent_id'],
 			'post_type' => $this->post_type,
 			'post_status' => 'publish',
-			'meta_input' => array(
+			'meta_input' => apply_filters('filter_meta_input', array(
 				$this->meta_prefix.'path' => $arr_item['path'],
 				$this->meta_prefix.'size' => $arr_item['size'],
 				$this->meta_prefix.'time' => $arr_item['time'],
-			),
+			)),
 		);
 
 		$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_parent = '%d' AND post_title = %s", $arr_item['parent_id'], $arr_item['name']));
@@ -878,8 +878,8 @@ class mf_backup
 			#######################
 			register_post_type($this->post_type, array(
 				'labels' => array(
-					'name' => _x(__("Backup", 'lang_backup'), 'post type general name'),
-					'singular_name' => _x(__("Backup", 'lang_backup'), 'post type singular name'),
+					'name' => __("Backup", 'lang_backup'),
+					'singular_name' => __("Backup", 'lang_backup'),
 					'menu_name' => __("Backup", 'lang_backup'),
 				),
 				'public' => false,
