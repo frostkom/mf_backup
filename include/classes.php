@@ -606,6 +606,10 @@ class mf_backup
 
 		if($obj_cron->is_running == false)
 		{
+			mf_uninstall_plugin(array(
+				'options' => array('setting_backup_mysql', 'setting_backup_perform'),
+			));
+
 			// Save new backup
 			##########################
 			$setting_backup_schedule = get_site_option('setting_backup_schedule');
