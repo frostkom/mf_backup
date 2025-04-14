@@ -718,88 +718,48 @@ class mf_backup
 
 								if(isset($json['success']) && $json['success'] == true)
 								{
-									list($upload_path, $upload_url) = get_uploads_folder($this->post_type."/sites/".remove_protocol(array('url' => $post_domain, 'clean' => true)));
-
 									$post_limit_amount = count($json['data']);
 
-									foreach($json['data'] as $arr_item)
+									if($post_limit_amount > 0)
 									{
-										$file_remote_url = $arr_item['url'];
+										list($upload_path, $upload_url) = get_uploads_folder($this->post_type."/sites/".remove_protocol(array('url' => $post_domain, 'clean' => true)));
 
-										$file_name = basename($file_remote_url);
-										$file_local_path = $upload_path.$file_name;
-
-										if($file_name == ".htaccess" || $file_name == ".htaccess_temp")
+										foreach($json['data'] as $arr_item)
 										{
-											$post_limit_amount--;
-										}
+											$file_remote_url = $arr_item['url'];
 
-										else
-										{
-											$log_message_download = sprintf("The file from %s was NOT downloaded", $post_domain_clean);
+											$file_name = basename($file_remote_url);
+											$file_local_path = $upload_path.$file_name;
 
-											if(file_exists($file_local_path) && filesize($file_local_path) > 0)
+											if($file_name == ".htaccess" || $file_name == ".htaccess_temp")
 											{
-												if(isset($arr_item['size']) && $arr_item['size'] != filesize($file_local_path))
-												{
-													unlink($file_local_path);
-												}
-
-												else
-												{
-													$arr_item_temp = $arr_item;
-													$arr_item_temp['parent_id'] = $post_id;
-													$arr_item_temp['path'] = $file_local_path;
-													$this->add_item($arr_item_temp);
-
-													do_log($log_message_download, 'trash');
-												}
-											}
-
-											if(file_exists($file_local_path))
-											{
-												$arr_item_temp = $arr_item;
-												$arr_item_temp['parent_id'] = $post_id;
-												$arr_item_temp['path'] = $file_local_path;
-												$this->add_item($arr_item_temp);
-
-												do_log($log_message_download, 'trash');
+												$post_limit_amount--;
 											}
 
 											else
 											{
-												$success = $this->download_file(array('source' => $file_remote_url, 'source_size' => $arr_item['size'], 'target' => $file_local_path));
+												$log_message_download = sprintf("The file from %s was NOT downloaded", $post_domain_clean);
 
-												if($success)
+												if(file_exists($file_local_path) && filesize($file_local_path) > 0)
 												{
-													$post_id_last = $wpdb->get_var($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_type = %s AND post_parent = '%d' AND post_status != %s AND post_title != %s AND meta_key = %s ORDER BY meta_value DESC LIMIT 0, 1", $this->post_type, $post_id, 'trash', $arr_item['name'], $this->meta_prefix.'time'));
-
-													if($post_id_last > 0)
+													if(isset($arr_item['size']) && $arr_item['size'] != filesize($file_local_path))
 													{
-														$post_size_previous = get_post_meta($post_id_last, $this->meta_prefix.'size', true);
-
-														if($post_size_previous > 0)
-														{
-															$size_diff = ($arr_item['size'] - $post_size_previous);
-															$size_diff_percent = (($size_diff / $post_size_previous) * 100);
-
-															if($size_diff_percent > 5 || $size_diff_percent < -5)
-															{
-																do_log(sprintf("The file from %s was %s larger compared to the previous file", $post_domain_clean, mf_format_number($size_diff_percent, 0)."%")." (#Parent:".$post_id.", #Last:".$post_id_last.", ".get_the_title($post_id_last)." ".show_final_size($post_size_previous)." -> ".$arr_item['name']." ".show_final_size($arr_item['size']).")", 'publish', false);
-															}
-														}
-
-														else
-														{
-															do_log("The previous file had no size (".$wpdb->last_query." -> ".$post_id_last.")");
-														}
+														unlink($file_local_path);
 													}
 
-													/*else
+													else
 													{
-														do_log("I did not get an ID back (".$wpdb->last_query.")");
-													}*/
+														$arr_item_temp = $arr_item;
+														$arr_item_temp['parent_id'] = $post_id;
+														$arr_item_temp['path'] = $file_local_path;
+														$this->add_item($arr_item_temp);
 
+														do_log($log_message_download, 'trash');
+													}
+												}
+
+												if(file_exists($file_local_path))
+												{
 													$arr_item_temp = $arr_item;
 													$arr_item_temp['parent_id'] = $post_id;
 													$arr_item_temp['path'] = $file_local_path;
@@ -810,9 +770,52 @@ class mf_backup
 
 												else
 												{
-													do_log($log_message_download.": ".$file_name." (".show_final_size($arr_item['size'])." -> ".show_final_size(filesize($file_local_path)).")"); //$file_local_path
+													$success = $this->download_file(array('source' => $file_remote_url, 'source_size' => $arr_item['size'], 'target' => $file_local_path));
 
-													unlink($file_local_path);
+													if($success)
+													{
+														$post_id_last = $wpdb->get_var($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." INNER JOIN ".$wpdb->postmeta." ON ".$wpdb->posts.".ID = ".$wpdb->postmeta.".post_id WHERE post_type = %s AND post_parent = '%d' AND post_status != %s AND post_title != %s AND meta_key = %s ORDER BY meta_value DESC LIMIT 0, 1", $this->post_type, $post_id, 'trash', $arr_item['name'], $this->meta_prefix.'time'));
+
+														if($post_id_last > 0)
+														{
+															$post_size_previous = get_post_meta($post_id_last, $this->meta_prefix.'size', true);
+
+															if($post_size_previous > 0)
+															{
+																$size_diff = ($arr_item['size'] - $post_size_previous);
+																$size_diff_percent = (($size_diff / $post_size_previous) * 100);
+
+																if($size_diff_percent > 5 || $size_diff_percent < -5)
+																{
+																	do_log(sprintf("The file from %s was %s larger compared to the previous file", $post_domain_clean, mf_format_number($size_diff_percent, 0)."%")." (#Parent:".$post_id.", #Last:".$post_id_last.", ".get_the_title($post_id_last)." ".show_final_size($post_size_previous)." -> ".$arr_item['name']." ".show_final_size($arr_item['size']).")", 'publish', false);
+																}
+															}
+
+															else
+															{
+																do_log("The previous file had no size (".$wpdb->last_query." -> ".$post_id_last.")");
+															}
+														}
+
+														/*else
+														{
+															do_log("I did not get an ID back (".$wpdb->last_query.")");
+														}*/
+
+														$arr_item_temp = $arr_item;
+														$arr_item_temp['parent_id'] = $post_id;
+														$arr_item_temp['path'] = $file_local_path;
+														$this->add_item($arr_item_temp);
+
+														do_log($log_message_download, 'trash');
+													}
+
+													else
+													{
+														do_log($log_message_download.": ".$file_name." (".show_final_size($arr_item['size'])." -> ".show_final_size(filesize($file_local_path)).")"); //$file_local_path
+
+														unlink($file_local_path);
+													}
 												}
 											}
 										}
@@ -862,10 +865,13 @@ class mf_backup
 
 			// Delete old uploads
 			#######################
-			list($upload_path, $upload_url) = get_uploads_folder($this->post_type);
+			list($upload_path, $upload_url) = get_uploads_folder($this->post_type, true, false);
 
-			get_file_info(array('path' => $upload_path, 'callback' => 'delete_files_callback', 'time_limit' => YEAR_IN_SECONDS));
-			get_file_info(array('path' => $upload_path, 'folder_callback' => 'delete_empty_folder_callback'));
+			if($upload_path != '')
+			{
+				get_file_info(array('path' => $upload_path, 'callback' => 'delete_files_callback', 'time_limit' => YEAR_IN_SECONDS));
+				get_file_info(array('path' => $upload_path, 'folder_callback' => 'delete_empty_folder_callback'));
+			}
 			#######################
 		}
 
