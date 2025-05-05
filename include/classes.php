@@ -52,6 +52,11 @@ class mf_backup
 
 		if($data['search'] != '')
 		{
+			if(is_array($data['search']))
+			{
+				do_log(__FUNCTION__." - Is array: ".var_export($data['search'], true));
+			}
+
 			$query_where = " LIKE '".$data['search']."%'";
 		}
 
@@ -295,6 +300,34 @@ class mf_backup
 		return $success;
 	}
 
+	function get_or_set_transient($data)
+	{
+		if(!isset($data['key'])){			$data['key'] = '';}
+		if(!isset($data['callback'])){		$data['callback'] = '';}
+
+		$out = "";
+
+		if($data['key'] != '')
+		{
+			$out = get_transient($data['key']);
+
+			if($out == "")
+			{
+				if(is_callable($data['callback']))
+				{
+					$out = call_user_func($data['callback']);
+
+					if($out != '')
+					{
+						set_transient($data['key'], $out, DAY_IN_SECONDS);
+					}
+				}
+			}
+		}
+
+		return $out;
+	}
+
 	function backup_db($data = array())
 	{
 		global $wpdb;
@@ -311,7 +344,7 @@ class mf_backup
 
 		if($data['db_tables'] == '*' || $data['db_tables'] == '')
 		{
-			$data['db_tables'] = get_or_set_transient(array('key' => 'tables_for_select', 'callback' => array($this, 'get_tables_for_select')));
+			$data['db_tables'] = $this->get_or_set_transient(array('key' => 'tables_for_select', 'callback' => array($this, 'get_tables_for_select')));
 			$table_type = $data['db_type'];
 		}
 
@@ -1095,7 +1128,7 @@ class mf_backup
 		settings_save_site_wide($setting_key);
 		$option = get_site_option($setting_key, get_option($setting_key));
 
-		$arr_data = get_or_set_transient(array('key' => 'tables_for_select', 'callback' => array($this, 'get_tables_for_select')));
+		$arr_data = $this->get_or_set_transient(array('key' => 'tables_for_select', 'callback' => array($this, 'get_tables_for_select')));
 
 		echo show_select(array('data' => $arr_data, 'name' => $setting_key."[]", 'value' => $option, 'description' => __("If none are chosen, all are backed up", 'lang_backup')));
 	}
@@ -1323,7 +1356,7 @@ class mf_backup
 		if(IS_EDITOR)
 		{
 			$menu_start = "edit.php?post_type=".$this->post_type;
-			$menu_capability = override_capability(array('page' => $menu_start, 'default' => 'edit_posts'));
+			$menu_capability = 'edit_posts';
 
 			$menu_title = __("Settings", 'lang_address');
 			add_submenu_page($menu_start, $menu_title, $menu_title, $menu_capability, admin_url("options-general.php?page=settings_mf_base#settings_backup"));
