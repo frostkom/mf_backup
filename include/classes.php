@@ -14,7 +14,12 @@ class mf_backup
 
 	function authorize_api()
 	{
-		if(check_var('authkey') != get_site_option('setting_rss_api_key'))
+		$setting_rss_api_key = get_site_option('setting_rss_api_key');
+
+		$obj_encryption = new mf_encryption(__CLASS__);
+		$setting_rss_api_key = $obj_encryption->decrypt($setting_rss_api_key, md5(AUTH_KEY));
+
+		if(check_var('authkey') != $setting_rss_api_key)
 		{
 			header("Status: 401 Unauthorized because of key");
 
@@ -1011,6 +1016,19 @@ class mf_backup
 		}
 	}
 
+	function pre_update_option($new_value, $old_value)
+	{
+		$out = "";
+
+		if($new_value != '')
+		{
+			$obj_encryption = new mf_encryption(__CLASS__);
+			$out = $obj_encryption->encrypt($new_value, md5(AUTH_KEY));
+		}
+
+		return $out;
+	}
+
 	function settings_backup_callback()
 	{
 		$setting_key = get_setting_key(__FUNCTION__);
@@ -1146,6 +1164,9 @@ class mf_backup
 		$setting_key = get_setting_key(__FUNCTION__);
 		settings_save_site_wide($setting_key);
 		$option = get_site_option($setting_key, get_option($setting_key));
+
+		$obj_encryption = new mf_encryption(__CLASS__);
+		$option = $obj_encryption->decrypt($option, md5(AUTH_KEY));
 
 		echo show_password_field(array('name' => $setting_key, 'value' => $option, 'xtra' => " autocomplete='new-password'", 'suffix' => __("Create a custom key here", 'lang_backup')));
 	}
@@ -1293,11 +1314,14 @@ class mf_backup
 		settings_save_site_wide($setting_key);
 		$option = get_site_option($setting_key, get_option($setting_key));
 
-		$authkey = get_site_option('setting_rss_api_key');
+		$setting_rss_api_key = get_site_option('setting_rss_api_key');
+
+		$obj_encryption = new mf_encryption(__CLASS__);
+		$setting_rss_api_key = $obj_encryption->decrypt($setting_rss_api_key, md5(AUTH_KEY));
 
 		$display_instructions = true;
 
-		if($authkey == '')
+		if($setting_rss_api_key == '')
 		{
 			echo "<p>".__("You don't seam to have set an authorization key, please do so above", 'lang_backup')."</p>";
 		}
@@ -1311,8 +1335,8 @@ class mf_backup
 				echo "<p><i class='fa fa-exclamation-triangle yellow'></i> ".sprintf(__("You have to delete the %s file from (%s) the backup folders which you want to be able to download backups from", 'lang_backup'), ".htaccess", $backup_dir)."</p>";
 			}*/
 
-			$api_url = get_site_url()."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$authkey;
-			$rss_url = get_site_url()."/wp-content/plugins/mf_backup/include/feed.php?authkey=".$authkey;
+			$api_url = get_site_url()."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$setting_rss_api_key;
+			$rss_url = get_site_url()."/wp-content/plugins/mf_backup/include/feed.php?authkey=".$setting_rss_api_key;
 
 			echo "<p><a href='".$api_url."' class='button'>".__("API Link", 'lang_backup')."</a> <a href='".$rss_url."' class='button'>".__("RSS Link", 'lang_backup')."</a></p>
 			<h4>".sprintf(__("Instructions to download backups to a %s", 'lang_backup'), "Synology NAS")."</h4>";
