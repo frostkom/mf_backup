@@ -1487,21 +1487,21 @@ class mf_backup
 		return $meta_boxes;
 	}
 
-	function column_header($cols)
+	function column_header($columns)
 	{
 		global $post_type;
 
-		unset($cols['date']);
+		unset($columns['date']);
 
 		switch($post_type)
 		{
 			case $this->post_type:
-				$cols['size'] = __("Size", 'lang_backup');
-				$cols['last_fetched'] = __("Last Updated", 'lang_backup');
+				$columns['size'] = __("Size", 'lang_backup');
+				$columns['last_fetched'] = __("Last Updated", 'lang_backup');
 			break;
 		}
 
-		return $cols;
+		return $columns;
 	}
 
 	function get_amount($data = array())
@@ -1519,14 +1519,14 @@ class mf_backup
 		return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d' AND post_status != %s", $this->post_type, $this->id, 'trash')); // AND post_status = %s //, $data['post_status']
 	}
 
-	function column_cell($col, $post_id)
+	function column_cell($column, $post_id)
 	{
 		global $wpdb, $post;
 
 		switch($post->post_type)
 		{
 			case $this->post_type:
-				switch($col)
+				switch($column)
 				{
 					case 'size':
 						$post_meta_size = get_post_meta($post_id, $this->meta_prefix.'size', true);
