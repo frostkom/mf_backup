@@ -5,7 +5,7 @@ class mf_backup
 	var $id = 0;
 	var $post_type = 'mf_backup';
 	var $meta_prefix;
-	var $arr_files = array();
+	var $arr_files = [];
 
 	function __construct()
 	{
@@ -45,13 +45,13 @@ class mf_backup
 		}
 	}
 
-	function get_tables_for_select($data = array())
+	function get_tables_for_select($data = [])
 	{
 		global $wpdb;
 
 		if(!isset($data['search'])){	$data['search'] = '';}
 
-		$arr_data = array();
+		$arr_data = [];
 
 		$query_where = "";
 
@@ -208,7 +208,7 @@ class mf_backup
 				$obj_base = new mf_base();
 			}
 
-			$this->arr_files = array();
+			$this->arr_files = [];
 
 			get_file_info(array('path' => $data['path'], 'callback' => array($this, 'gather_files'), 'allow_depth' => false));
 
@@ -229,7 +229,7 @@ class mf_backup
 		}
 	}
 
-	function random_chars($data = array())
+	function random_chars($data = [])
 	{
 		if(!isset($data['limit'])){	$data['limit'] = 5;}
 
@@ -266,7 +266,7 @@ class mf_backup
 		closedir($dir);
 	}
 
-	function backup_ftp($data = array())
+	function backup_ftp($data = [])
 	{
 		$success = false;
 
@@ -333,7 +333,7 @@ class mf_backup
 		return $out;
 	}
 
-	function backup_db($data = array())
+	function backup_db($data = [])
 	{
 		global $wpdb;
 
@@ -492,7 +492,7 @@ class mf_backup
 		return $success;
 	}
 
-	function do_backup($data = array())
+	function do_backup($data = [])
 	{
 		global $wpdb;
 
@@ -1203,7 +1203,7 @@ class mf_backup
 
 		list($upload_path, $upload_url) = get_uploads_folder();
 
-		$globals['backup_files'] = array();
+		$globals['backup_files'] = [];
 
 		$option = (is_multisite() ? get_site_option('backwpup_jobs') : get_option('backwpup_jobs'));
 
@@ -1268,7 +1268,7 @@ class mf_backup
 			break;
 
 			case 'json':
-				$arr_out = array();
+				$arr_out = [];
 
 				foreach($backup_files as $file)
 				{
@@ -1411,31 +1411,31 @@ class mf_backup
 		return $arr_pages;
 	}
 
-	function row_actions($actions, $post)
+	function row_actions($arr_actions, $post)
 	{
 		if($post->post_type == $this->post_type)
 		{
 			$post_id = $post->ID;
 
-			unset($actions['inline hide-if-no-js']);
+			unset($arr_actions['inline hide-if-no-js']);
 
 			$post_domain = get_post_meta($post_id, $this->meta_prefix.'domain', true);
 			$post_api_key = get_post_meta($post_id, $this->meta_prefix.'api_key', true);
 
 			if($post_domain != '' && $post_api_key != '')
 			{
-				$actions['login'] = "<a href='".$post_domain."/wp-admin/'>".__("Log In", 'lang_backup')."</a>";
-				$actions['source'] = "<a href='".$post_domain."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$post_api_key."'>".__("Source", 'lang_backup')."</a>";
+				$arr_actions['login'] = "<a href='".$post_domain."/wp-admin/'>".__("Log In", 'lang_backup')."</a>";
+				$arr_actions['source'] = "<a href='".$post_domain."/wp-content/plugins/mf_backup/include/api/?type=get_backups&authkey=".$post_api_key."'>".__("Source", 'lang_backup')."</a>";
 			}
 
 			else
 			{
-				unset($actions['edit']);
-				//unset($actions['trash']);
+				unset($arr_actions['edit']);
+				//unset($arr_actions['trash']);
 			}
 		}
 
-		return $actions;
+		return $arr_actions;
 	}
 
 	function rwmb_meta_boxes($meta_boxes)
@@ -1504,7 +1504,7 @@ class mf_backup
 		return $columns;
 	}
 
-	function get_amount($data = array())
+	function get_amount($data = [])
 	{
 		global $wpdb;
 
