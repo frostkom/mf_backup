@@ -2,7 +2,7 @@ jQuery(function($)
 {
 	function run_ajax(obj)
 	{
-		obj.selector.html("<i class='fa fa-spinner fa-spin fa-2x'></i>");
+		obj.selector.html(script_backup.loading_animation);
 
 		$.ajax(
 		{

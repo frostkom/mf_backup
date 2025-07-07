@@ -1371,7 +1371,10 @@ class mf_backup
 		{
 			$plugin_include_url = plugin_dir_url(__FILE__);
 
-			mf_enqueue_script('script_backup', $plugin_include_url."script_wp.js", array('plugin_url' => $plugin_include_url, 'ajax_url' => admin_url('admin-ajax.php')));
+			mf_enqueue_script('script_backup', $plugin_include_url."script_wp.js", array(
+				'ajax_url' => admin_url('admin-ajax.php'),
+				'loading_animation' => apply_filters('get_loading_animation', ''),
+			));
 		}
 	}
 
