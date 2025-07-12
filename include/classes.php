@@ -31,7 +31,7 @@ class mf_backup
 			$setting_backup_rss_allowed_ips = get_site_option('setting_backup_rss_allowed_ips');
 			$arr_setting_backup_rss_allowed_ips = array_map('trim', explode(",", $setting_backup_rss_allowed_ips));
 
-			if(count($arr_setting_backup_rss_allowed_ips) > 0 && !in_array(apply_filters('get_current_visitor_ip', $_SERVER['REMOTE_ADDR']), $arr_setting_backup_rss_allowed_ips))
+			if(count($arr_setting_backup_rss_allowed_ips) > 0 && !in_array(apply_filters('get_current_visitor_ip', ""), $arr_setting_backup_rss_allowed_ips))
 			{
 				header("Status: 401 Unauthorized because of IP");
 
@@ -1177,7 +1177,7 @@ class mf_backup
 		settings_save_site_wide($setting_key);
 		$option = get_site_option($setting_key, get_option($setting_key));
 
-		echo show_textfield(array('name' => $setting_key, 'value' => $option, 'placeholder' => "123.456.789.000", 'description' => sprintf(__("Add %s to try it out in the browser", 'lang_backup'), apply_filters('get_current_visitor_ip', $_SERVER['REMOTE_ADDR']))));
+		echo show_textfield(array('name' => $setting_key, 'value' => $option, 'placeholder' => "123.456.789.000", 'description' => sprintf(__("Add %s to try it out in the browser", 'lang_backup'), apply_filters('get_current_visitor_ip', ""))));
 	}
 
 	function get_backup_files($data)
