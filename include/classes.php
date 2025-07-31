@@ -934,8 +934,6 @@ class mf_backup
 				'show_ui' => true,
 				'show_in_menu' => true,
 				'show_in_nav_menus' => false,
-				'exclude_from_search' => true,
-				//'capability_type' => 'page',
 				'menu_position' => 100,
 				'menu_icon' => 'dashicons-backup',
 				'supports' => array('title'),
