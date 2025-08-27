@@ -86,9 +86,17 @@ class mf_backup
 
 	function get_backup_dir()
 	{
-		$out = "";
+		$out = [];
+		
+		$option = (is_multisite() ? get_site_option('backwpup_cfg_hash') : get_option('backwpup_cfg_hash'));
 
-		$option = (is_multisite() ? get_site_option('backwpup_jobs') : get_option('backwpup_jobs'));
+		if($option != '')
+		{
+			$out[] = "/uploads/backwpup/".$option."/";
+			$out[] = "/uploads/backwpup/".$option."/backups/";
+		}
+
+		/*$option = (is_multisite() ? get_site_option('backwpup_jobs') : get_option('backwpup_jobs'));
 
 		if(is_array($option))
 		{
@@ -96,10 +104,10 @@ class mf_backup
 			{
 				if(isset($value['backupdir']) && $value['backupdir'] != $out)
 				{
-					$out .= ($out != '' ? ", " : "").$value['backupdir'];
+					$out[] = $value['backupdir'];
 				}
 			}
-		}
+		}*/
 
 		return $out;
 	}
@@ -126,57 +134,61 @@ class mf_backup
 
 		list($upload_path, $upload_url) = get_uploads_folder();
 
-		$backup_dir = $this->get_backup_dir();
-		$backup_htaccess = str_replace("uploads/", $upload_path, $backup_dir.$filename);
+		$arr_backup_dir = $this->get_backup_dir();
 
-		if(file_exists($backup_htaccess))
+		foreach($arr_backup_dir as $backup_dir)
 		{
-			//After a new plugin release backwpup_jobs might not be the same as previuosly expected, so this will remove .htaccess from the WP root
-			if(preg_match("/uploads/", $backup_htaccess))
+			$backup_htaccess = str_replace("uploads/", $upload_path, $backup_dir.$filename);
+
+			if(file_exists($backup_htaccess))
 			{
-				switch($type)
+				//After a new plugin release backwpup_jobs might not be the same as previuosly expected, so this will remove .htaccess from the WP root
+				if(preg_match("/uploads/", $backup_htaccess))
 				{
-					case 'remove':
-						if(file_exists($backup_htaccess))
-						{
-							unlink($backup_htaccess);
-						}
-					break;
-
-					case 'rename':
-					case 'restore':
-						$backup_htaccess_change = str_replace("uploads/", $upload_path, $backup_dir.$filename_change);
-
-						if(file_exists($backup_htaccess_change))
-						{
-							unlink($backup_htaccess);
-						}
-
-						else
-						{
-							rename($backup_htaccess, $backup_htaccess_change);
-
+					switch($type)
+					{
+						case 'remove':
 							if(file_exists($backup_htaccess))
 							{
-								do_log("I could not rename ".$backup_htaccess." to ".$backup_htaccess_change);
+								unlink($backup_htaccess);
 							}
-						}
-					break;
+						break;
+
+						case 'rename':
+						case 'restore':
+							$backup_htaccess_change = str_replace("uploads/", $upload_path, $backup_dir.$filename_change);
+
+							if(file_exists($backup_htaccess_change))
+							{
+								unlink($backup_htaccess);
+							}
+
+							else
+							{
+								rename($backup_htaccess, $backup_htaccess_change);
+
+								if(file_exists($backup_htaccess))
+								{
+									do_log("I could not rename ".$backup_htaccess." to ".$backup_htaccess_change);
+								}
+							}
+						break;
+					}
 				}
-			}
 
-			else
-			{
-				switch($type)
+				else
 				{
-					case 'remove':
-						do_log("Remove ".$backup_htaccess." but make sure that it is not the one in the WP root");
-					break;
+					switch($type)
+					{
+						case 'remove':
+							do_log("Remove ".$backup_htaccess." but make sure that it is not the one in the WP root");
+						break;
 
-					case 'rename':
-					case 'restore':
-						do_log("Rename ".$backup_htaccess." to ".$backup_htaccess_change." but make sure that it is not the one in the WP root");
-					break;
+						case 'rename':
+						case 'restore':
+							do_log("Rename ".$backup_htaccess." to ".$backup_htaccess_change." but make sure that it is not the one in the WP root");
+						break;
+					}
 				}
 			}
 		}
