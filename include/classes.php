@@ -87,7 +87,7 @@ class mf_backup
 	function get_backup_dir()
 	{
 		$out = [];
-		
+
 		$option = (is_multisite() ? get_site_option('backwpup_cfg_hash') : get_option('backwpup_cfg_hash'));
 
 		if($option != '')
@@ -608,11 +608,11 @@ class mf_backup
 			'post_parent' => $arr_item['parent_id'],
 			'post_type' => $this->post_type,
 			'post_status' => 'publish',
-			'meta_input' => apply_filters('filter_meta_input', array(
+			'meta_input' => array(
 				$this->meta_prefix.'path' => $arr_item['path'],
 				$this->meta_prefix.'size' => $arr_item['size'],
 				$this->meta_prefix.'time' => $arr_item['time'],
-			)),
+			),
 		);
 
 		$result = $wpdb->get_results($wpdb->prepare("SELECT ID FROM ".$wpdb->posts." WHERE post_parent = '%d' AND post_title = %s", $arr_item['parent_id'], $arr_item['name']));
@@ -628,6 +628,7 @@ class mf_backup
 				if($i == 0)
 				{
 					$post_data['ID'] = $post_id;
+					$post_data['meta_input'] = apply_filters('filter_meta_input', $post_data['meta_input'], $post_data['ID']);
 
 					wp_update_post($post_data);
 
@@ -643,6 +644,8 @@ class mf_backup
 
 		else
 		{
+			$post_data['meta_input'] = apply_filters('filter_meta_input', $post_data['meta_input']);
+
 			$post_id = wp_insert_post($post_data);
 		}
 	}
