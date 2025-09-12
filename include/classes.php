@@ -944,6 +944,10 @@ class mf_backup
 					'name' => __("Backup", 'lang_backup'),
 					'singular_name' => __("Backup", 'lang_backup'),
 					'menu_name' => __("Backup", 'lang_backup'),
+					'all_items' => __('List', 'lang_backup'),
+					'edit_item' => __('Edit', 'lang_backup'),
+					'view_item' => __('View', 'lang_backup'),
+					'add_new_item' => __('Add New', 'lang_backup'),
 				),
 				'public' => false,
 				'show_ui' => true,
@@ -1398,7 +1402,7 @@ class mf_backup
 			$menu_start = "edit.php?post_type=".$this->post_type;
 			$menu_capability = 'edit_posts';
 
-			$menu_title = __("Settings", 'lang_address');
+			$menu_title = __("Settings", 'lang_backup');
 			add_submenu_page($menu_start, $menu_title, $menu_title, $menu_capability, admin_url("options-general.php?page=settings_mf_base#settings_backup"));
 		}
 	}
