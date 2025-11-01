@@ -3,7 +3,7 @@
 class mf_backup
 {
 	var $id = 0;
-	var $post_type = 'mf_backup';
+	var $post_type = __CLASS__;
 	var $meta_prefix;
 	var $arr_files = [];
 
@@ -1545,6 +1545,8 @@ class mf_backup
 	function column_cell($column, $post_id)
 	{
 		global $wpdb, $post;
+
+		do_action('load_font_awesome');
 
 		switch($post->post_type)
 		{
