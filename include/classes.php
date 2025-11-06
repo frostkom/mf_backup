@@ -389,7 +389,10 @@ class mf_backup
 
 		$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
 
-		$file = prepare_file_name(date("Y-m-d")."_db_".$table_type."_".$data['random_chars']).".".$file_suffix;
+		//$file = prepare_file_name(date("Y-m-d")."_db_".$table_type."_".$data['random_chars']).".".$file_suffix;
+		//$file = "db_".$table_type."_".date("ymdHis")."_".$data['random_chars'].".".$file_suffix;
+		$file_base = "db_".$table_type;
+		$file = sanitize_title_with_dashes(sanitize_title($file_base))."_".date("ymdHis")."_".wp_hash($file_base).".".$file_suffix;
 
 		$db_struct = $db_info = "# ".get_site_url()." dump";
 
