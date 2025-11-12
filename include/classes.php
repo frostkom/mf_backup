@@ -1176,10 +1176,10 @@ class mf_backup
 
 	function setting_backup_perform_callback()
 	{
-		echo "<div>"
+		echo "<div".get_form_button_classes().">"
 			.show_button(array('type' => 'button', 'name' => 'btnBackupPerform', 'text' => __("Run", 'lang_backup'), 'class' => 'button-secondary'))
 		."</div>
-		<div class='api_backup_perform'></div>";
+		<p class='api_backup_perform'></p>";
 	}
 
 	function setting_rss_api_key_callback()
