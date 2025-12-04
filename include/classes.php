@@ -389,8 +389,6 @@ class mf_backup
 
 		$this->check_limit(array('path' => $upload_path, 'suffix' => $file_suffix));
 
-		//$file = prepare_file_name(date("Y-m-d")."_db_".$table_type."_".$data['random_chars']).".".$file_suffix;
-		//$file = "db_".$table_type."_".date("ymdHis")."_".$data['random_chars'].".".$file_suffix;
 		$file_base = "db_".$table_type;
 		$file = sanitize_title_with_dashes(sanitize_title($file_base))."_".date("ymdHis")."_".wp_hash($file_base).".".$file_suffix;
 
@@ -398,7 +396,7 @@ class mf_backup
 
 		foreach($data['db_tables'] as $table => $name)
 		{
-			if(does_table_exist($table))
+			if(apply_filters('does_table_exist', false, $table))
 			{
 				if(in_array($data['db_type'], array('all', 'struct')))
 				{
