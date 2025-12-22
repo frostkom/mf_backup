@@ -559,7 +559,7 @@ class mf_backup
 
 		$headers = curl_getinfo($ch);
 
-		curl_close($ch);
+		//curl_close($ch);
 		fclose($fp);
 
 		switch($headers['http_code'])
