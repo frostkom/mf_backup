@@ -1533,14 +1533,13 @@ class mf_backup
 		global $wpdb;
 
 		if(!isset($data['id'])){			$data['id'] = 0;}
-		//if(!isset($data['post_status'])){	$data['post_status'] = 'publish';}
 
 		if($data['id'] > 0)
 		{
 			$this->id = $data['id'];
 		}
 
-		return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d' AND post_status != %s", $this->post_type, $this->id, 'trash')); // AND post_status = %s //, $data['post_status']
+		return $wpdb->get_var($wpdb->prepare("SELECT COUNT(ID) FROM ".$wpdb->posts." WHERE post_type = %s AND post_parent = '%d' AND post_status != %s", $this->post_type, $this->id, 'trash'));
 	}
 
 	function column_cell($column, $post_id)
