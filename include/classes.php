@@ -768,17 +768,17 @@ class mf_backup
 						switch($headers['http_code'])
 						{
 							case 200:
-								$json = json_decode($content, true);
+								$arr_json = json_decode($content, true);
 
-								if(isset($json['success']) && $json['success'] == true)
+								if(isset($arr_json['success']) && $arr_json['success'] == true)
 								{
-									$post_limit_amount = count($json['data']);
+									$post_limit_amount = count($arr_json['data']);
 
 									if($post_limit_amount > 0)
 									{
 										list($upload_path, $upload_url) = get_uploads_folder($this->post_type."/sites/".remove_protocol(array('url' => $post_domain, 'clean' => true)));
 
-										foreach($json['data'] as $arr_item)
+										foreach($arr_json['data'] as $arr_item)
 										{
 											$file_remote_url = $arr_item['url'];
 
@@ -904,7 +904,7 @@ class mf_backup
 
 								else
 								{
-									do_log($log_message." (".$url_get_backups." -> No success found in content -> JSON: ".var_export($json, true)." -> Server: ".$headers['server'].")"); //, ".var_export($headers, true)."
+									do_log($log_message." (".$url_get_backups." -> No success found in content -> JSON: ".var_export($arr_json, true)." -> Server: ".$headers['server'].")"); //, ".var_export($headers, true)."
 								}
 							break;
 
