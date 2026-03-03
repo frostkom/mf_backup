@@ -282,7 +282,7 @@ class mf_backup
 	{
 		$success = false;
 
-		$time_reset = strtotime(date("Y-m-d H:i:s"));
+		$time_reset = strtotime(current_time('mysql'));
 		set_time_limit(600);
 
 		if(!isset($data['folder'])){			$data['folder'] = '';}
@@ -351,7 +351,7 @@ class mf_backup
 
 		$success = false;
 
-		$time_reset = strtotime(date("Y-m-d H:i:s"));
+		$time_reset = strtotime(current_time('mysql'));
 		set_time_limit(600);
 
 		if(!isset($data['compress'])){		$data['compress'] = get_site_option('setting_backup_compress');}
@@ -443,12 +443,12 @@ class mf_backup
 
 								foreach($r as $key => $value)
 								{
-									if((strtotime(date("Y-m-d H:i:s")) - $time_reset) > 300)
+									if((strtotime(current_time('mysql')) - $time_reset) > 300)
 									{
 										sleep(1);
 										set_time_limit(600);
 
-										$time_reset = strtotime(date("Y-m-d H:i:s"));
+										$time_reset = strtotime(current_time('mysql'));
 									}
 
 									if($value != null)
@@ -673,9 +673,9 @@ class mf_backup
 
 				$schedule_cutoff = date("Y-m-d H:i:s", strtotime($option_backup_saved." -1 ".$setting_backup_schedule));
 
-				if($option_backup_saved == '' || $schedule_cutoff < date("Y-m-d H:i:s"))
+				if($option_backup_saved == '' || $schedule_cutoff < current_time('mysql'))
 				{
-					update_option('option_backup_saved', date("Y-m-d H:i:s"), false);
+					update_option('option_backup_saved', current_time('mysql'), false);
 
 					$this->do_backup();
 				}
@@ -881,7 +881,7 @@ class mf_backup
 										$post_limit_amount = 2;
 									}
 
-									update_post_meta($post_id, $this->meta_prefix.'last_fetched', date("Y-m-d H:i:s"));
+									update_post_meta($post_id, $this->meta_prefix.'last_fetched', current_time('mysql'));
 
 									if($this->get_amount(array('id' => $post_id)) > $post_limit_amount)
 									{
@@ -1086,8 +1086,8 @@ class mf_backup
 			{
 				$backup_next = format_date(date("Y-m-d H:i:s", strtotime($option_backup_saved." +1 ".$option)));
 
-				echo "<p".($backup_next < date("Y-m-d H:i:s") ? "" : "").">"
-					.($backup_next < date("Y-m-d H:i:s") ? "<i class='fa fa-exclamation-triangle yellow'></i> " : "")
+				echo "<p".($backup_next < current_time('mysql') ? "" : "").">"
+					.($backup_next < current_time('mysql') ? "<i class='fa fa-exclamation-triangle yellow'></i> " : "")
 					.sprintf(__("The backup was last run %s and will run again %s", 'lang_backup'), format_date($option_backup_saved), $backup_next)
 				."</p>";
 			}
