@@ -1400,14 +1400,11 @@ class mf_backup
 
 	function admin_menu()
 	{
-		if(IS_EDITOR)
-		{
-			$menu_start = "edit.php?post_type=".$this->post_type;
-			$menu_capability = 'edit_posts';
+		$menu_start = "edit.php?post_type=".$this->post_type;
+		$menu_capability = 'manage_options';
 
-			$menu_title = __("Settings", 'lang_backup');
-			add_submenu_page($menu_start, $menu_title, $menu_title, $menu_capability, admin_url("options-general.php?page=settings_mf_base#settings_backup"));
-		}
+		$menu_title = __("Settings", 'lang_backup');
+		add_submenu_page($menu_start, $menu_title, $menu_title, $menu_capability, admin_url("options-general.php?page=settings_mf_base#settings_backup"));
 	}
 
 	function filter_sites_table_settings($arr_settings)
